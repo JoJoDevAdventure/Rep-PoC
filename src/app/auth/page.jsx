@@ -13,7 +13,7 @@ const Auth = () => {
     email: "",
     password: "",
   });
-  
+
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -36,7 +36,7 @@ const Auth = () => {
       setTimeout(() => {
         appState.user = user;
         appState.isAuth = true;
-        console.log(appState.user.username)
+        console.log(appState.user?.username)
         setLoading(false);
         router.push("/"); // Redirect to the home page
       }, 2000);
