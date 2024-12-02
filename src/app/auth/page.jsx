@@ -13,6 +13,7 @@ const Auth = () => {
     email: "",
     password: "",
   });
+  
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 

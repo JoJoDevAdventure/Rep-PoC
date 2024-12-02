@@ -8,12 +8,6 @@ const MainContent = ({ menuItems }) => {
   const { isDarkMode } = useTheme(); // Get the current theme (dark or light mode)
   const [activeTab, setActiveTab] = useState(0); // Tab state: 0 = Calls History, 1 = LIVE Call
 
-  // Handle switching to a call
-  const handleCall = (call) => {
-    setCurrentCall(call); // Update the current call
-    setActiveTab(1); // Switch to the LIVE Call tab
-  };
-
   return (
     <div
       className={`p-6 space-y-4 h-full ${

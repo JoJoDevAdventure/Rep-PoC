@@ -21,7 +21,7 @@ const page = () => {
       {/* Main Dashboard Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <Header username={appState.user.username} />
+        <Header username={appState.user?.username} />
 
         {/* Main Content Section */}
         <MainContent menuItems={MenuItems} isDarkMode={isDarkMode} />

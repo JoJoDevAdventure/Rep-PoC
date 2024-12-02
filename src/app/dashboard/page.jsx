@@ -16,6 +16,7 @@ const Dashboard = () => {
     // Redirect user to the home page if no username is found in the app state
     if (appState.user == null) {
       router.push("/"); // Redirects to the root ("/") if not logged in
+      return
     }
   }, [router]); // Dependency ensures this runs whenever `router` changes
 
@@ -28,7 +29,7 @@ const Dashboard = () => {
       {/* Main Dashboard Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <Header username={appState.user.username} />
+        <Header username={appState.user?.username} />
         
         {/* Main Content Section */}
         <MainContent menuItems={MenuItems} />
