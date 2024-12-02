@@ -1,9 +1,11 @@
 "use client";
 
-import { appState } from '@/appState';
-import Loading from '@/Components/Loading';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { appState } from "@/appState"; // Application state to access the username
+import dynamic from "next/dynamic"; // For dynamic imports
+import { useRouter } from "next/navigation"; // For client-side navigation
+import { useEffect } from "react"; // React hook to handle side effects
+
+const Loading = dynamic(() => import("@/Components/Loading"), { ssr: false });
 
 const Home = () => {
   const router = useRouter();
