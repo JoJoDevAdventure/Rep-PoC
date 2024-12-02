@@ -1,13 +1,16 @@
 "use client";
 
 import { appState } from "@/appState"; // Application state to access the username
-import Humphry from "@/Components/Humphry";
 import { MenuItems } from "@/data"; // Mock data for calls
+import dynamic from "next/dynamic"; // For dynamic imports
 import { useRouter } from "next/navigation"; // For client-side navigation
 import { useEffect } from "react"; // React hook to handle side effects
-import Header from "../../Components/dashboard/Header"; // Header component
-import SideBar from "../../Components/dashboard/SideBar"; // Sidebar navigation component
-import MainContent from "./MainContent"; // Main content component
+
+// Dynamically import components with SSR disabled
+const Humphry = dynamic(() => import("@/Components/Humphry"), { ssr: false });
+const Header = dynamic(() => import("../../Components/dashboard/Header"), { ssr: false });
+const SideBar = dynamic(() => import("../../Components/dashboard/SideBar"), { ssr: false });
+const MainContent = dynamic(() => import("./MainContent"), { ssr: false });
 
 const Dashboard = () => {
   const router = useRouter(); // Next.js router for navigation
