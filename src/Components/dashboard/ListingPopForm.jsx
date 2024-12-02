@@ -5,8 +5,9 @@ import WaveSurfer from "wavesurfer.js";
 import loadingAnimation from "../animations/loading.json"; // Path to your Lottie JSON file
 import ImagePicker from "../ImagePicker";
 
-const GITHUB_API_URL = "https://api.github.com/repos/:owner/:repo/contents/:path";
-const GITHUB_TOKEN = "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"; // Replace with your token
+const GITHUB_API_URL =
+  "https://api.github.com/repos/:owner/:repo/contents/:path";
+const githubToken = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 const GITHUB_OWNER = "jospehB-ReplicAIDE";
 const GITHUB_REPO = "PoC-Files";
 
@@ -41,25 +42,60 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
       reader.readAsDataURL(file);
     });
 
-  // Upload file to GitHub
   const uploadFileToGitHub = async (file, fileName) => {
+    if (!githubToken) {
+      console.error(
+        "GitHub token is not defined. Check your .env file.",
+        githubToken
+      );
+      return;
+    }
+
     try {
       const base64Content = await fileToBase64(file);
+
+      // Check if the file already exists
+      const checkFileUrl = GITHUB_API_URL.replace(":owner", GITHUB_OWNER)
+        .replace(":repo", GITHUB_REPO)
+        .replace(":path", fileName);
+
+      let existingFileSha = null;
+
+      try {
+        const checkResponse = await axios.get(checkFileUrl, {
+          headers: {
+            Authorization: `Bearer ${githubToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        // If the file exists, get its SHA
+        existingFileSha = checkResponse.data.sha;
+      } catch (checkError) {
+        if (checkError.response && checkError.response.status === 404) {
+          console.log("File does not exist. Creating a new one.");
+        } else {
+          console.error("Error checking file existence:", checkError);
+          throw checkError;
+        }
+      }
+
+      // Upload or update the file
       const response = await axios.put(
-        GITHUB_API_URL.replace(":owner", GITHUB_OWNER)
-          .replace(":repo", GITHUB_REPO)
-          .replace(":path", fileName),
+        checkFileUrl,
         {
-          message: `Add ${fileName}`,
+          message: `Add or update ${fileName}`,
           content: base64Content,
+          ...(existingFileSha ? { sha: existingFileSha } : {}), // Include SHA if updating
         },
         {
           headers: {
-            Authorization: `Bearer ${GITHUB_TOKEN}`,
+            Authorization: `Bearer ${githubToken}`,
             "Content-Type": "application/json",
           },
         }
       );
+
       return response.data.content.download_url; // Return the direct download link
     } catch (error) {
       console.error(`Error uploading ${fileName} to GitHub:`, error);
@@ -77,8 +113,14 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     setIsLoading(true);
 
     try {
-      const imageLink = await uploadFileToGitHub(uploadedFile, `images/${uploadedFile.name}`);
-      const audioLink = await uploadFileToGitHub(audioBlob, `audio/${audioBlob.name}`);
+      const imageLink = await uploadFileToGitHub(
+        uploadedFile,
+        `images/${uploadedFile.name}`
+      );
+      const audioLink = await uploadFileToGitHub(
+        audioBlob,
+        `audio/${audioBlob.name}`
+      );
 
       console.log("Image Link:", imageLink);
       console.log("Audio Link:", audioLink);
@@ -391,7 +433,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             }`}
             disabled={!audioBlob && !uploadedFile}
           >
-            "Save"
+            Save
           </button>
         </div>
       </div>

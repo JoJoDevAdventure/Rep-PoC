@@ -33,9 +33,9 @@ const Auth = () => {
       console.log(user)
       // Simulate a delay (e.g., for loading screen)
       setTimeout(() => {
-        appState.username = user.username;
+        appState.user = user;
         appState.isAuth = true;
-        console.log(appState.username)
+        console.log(appState.user.username)
         setLoading(false);
         router.push("/"); // Redirect to the home page
       }, 2000);
