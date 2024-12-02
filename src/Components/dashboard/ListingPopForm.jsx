@@ -1,8 +1,14 @@
+import axios from "axios"; // Add Axios for API requests
 import Lottie from "lottie-react";
 import { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 import loadingAnimation from "../animations/loading.json"; // Path to your Lottie JSON file
 import ImagePicker from "../ImagePicker";
+
+const GITHUB_API_URL = "https://api.github.com/repos/:owner/:repo/contents/:path";
+const GITHUB_TOKEN = "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"; // Replace with your token
+const GITHUB_OWNER = "jospehB-ReplicAIDE";
+const GITHUB_REPO = "PoC-Files";
 
 const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   const [uploadedFile, setUploadedFile] = useState(null); // State to store uploaded image
@@ -12,7 +18,6 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   const [isPlaying, setIsPlaying] = useState(false); // State to track play/pause
   const [isLoading, setIsLoading] = useState(false); // State to show/hide loading animation
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false); // Track if image picker is open
-  const [hasApplied, setHasApplied] = useState(false); // State to track if user has applied
 
   const mediaRecorderRef = useRef(null); // Ref for media recorder
   const waveformRef = useRef(null); // Ref for WaveSurfer container
@@ -24,6 +29,65 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     if (file) {
       setUploadedFile(file);
       setImagePreview(URL.createObjectURL(file)); // Create preview for the image
+    }
+  };
+
+  // Convert file to Base64
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]); // Strip metadata
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+
+  // Upload file to GitHub
+  const uploadFileToGitHub = async (file, fileName) => {
+    try {
+      const base64Content = await fileToBase64(file);
+      const response = await axios.put(
+        GITHUB_API_URL.replace(":owner", GITHUB_OWNER)
+          .replace(":repo", GITHUB_REPO)
+          .replace(":path", fileName),
+        {
+          message: `Add ${fileName}`,
+          content: base64Content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data.content.download_url; // Return the direct download link
+    } catch (error) {
+      console.error(`Error uploading ${fileName} to GitHub:`, error);
+      throw error;
+    }
+  };
+
+  // Handle "Save" functionality
+  const handleSave = async () => {
+    if (!uploadedFile || !audioBlob) {
+      console.error("Both audio and image files are required to save.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const imageLink = await uploadFileToGitHub(uploadedFile, `images/${uploadedFile.name}`);
+      const audioLink = await uploadFileToGitHub(audioBlob, `audio/${audioBlob.name}`);
+
+      console.log("Image Link:", imageLink);
+      console.log("Audio Link:", audioLink);
+
+      onSave({ imageLink, audioLink });
+    } catch (error) {
+      console.error("Error saving files:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,12 +192,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   };
 
   const handleCameraOpening = () => {
-    setIsImagePickerOpen(true)
-  }
-
-  const onApply = () => {
-    setHasApplied(true);
-    loadWaveform(audioBlob);
+    setIsImagePickerOpen(true);
   };
 
   useEffect(() => {
@@ -192,9 +251,10 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             </div>
           ) : (
             <>
-              <div 
-              onClick={() => setIsImagePickerOpen(true)}
-              className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 text-xl w-full mb-4">
+              <div
+                onClick={() => setIsImagePickerOpen(true)}
+                className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 text-xl w-full mb-4"
+              >
                 <svg
                   className="w-6 h-6"
                   xmlns="http://www.w3.org/2000/svg"
@@ -323,20 +383,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             Cancel
           </button>
           <button
-            onClick={() => {
-              if (audioBlob && uploadedFile) {
-                if (hasApplied) {
-                  onSave({ uploadedFile, audioBlob });
-                } else {
-                  onApply();
-                }
-              } else {
-                console.error(
-                  "Both audio and image files are required to save."
-                );
-                // Optionally, you can display an alert or show a validation message to the user.
-              }
-            }}
+            onClick={handleSave}
             className={`px-4 py-2 rounded-lg  text-white ${
               audioBlob && uploadedFile
                 ? "hover:bg-p2 bg-p1"
@@ -344,7 +391,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             }`}
             disabled={!audioBlob && !uploadedFile}
           >
-            {hasApplied ? "Save" : "Apply"}
+            "Save"
           </button>
         </div>
       </div>

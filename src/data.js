@@ -32,10 +32,10 @@ export const users = [
 
 export const MenuItems = [
   {
-    audio: "https://example.com/audio.mp3",
-    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141", // Pizza
-    title: "Margherita Pizza",
-    description: "Classic Italian pizza with fresh tomatoes, mozzarella, and basil.",
+    audio: "https://github.com/jospehB-ReplicAIDE/PoC-Files/raw/refs/heads/main/Ensalada.m4a",
+    image: "https://github.com/jospehB-ReplicAIDE/PoC-Files/raw/refs/heads/main/IMG_4837.WEBP",
+    title: "Ensalada Paisa",
+    description: "Lechuga fresca, tomate jugoso, cebolla morada, y aguacate, coronado con limón fresco, vinagre, sal y pimienta. Sencilla, pero llena de amor y sabor.",
     price: 12.99,
   },
   {
