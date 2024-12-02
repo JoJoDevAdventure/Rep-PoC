@@ -1,19 +1,17 @@
 "use client";
 
-import Button from "@/Components/Button";
-import CustomInput from "@/Components/CustomInput";
-import Loading from "@/Components/Loading";
-import { appState } from "@/appState"; // Import app state
-import { users } from "@/data"; // Import user data
-import { useRouter } from "next/navigation"; // Use the Next.js navigation API
+import { appState } from "@/appState";
+import { users } from "@/data";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const Auth = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+const Button = dynamic(() => import("@/Components/Button"), { ssr: false });
+const CustomInput = dynamic(() => import("@/Components/CustomInput"), { ssr: false });
+const Loading = dynamic(() => import("@/Components/Loading"), { ssr: false });
 
+const Auth = () => {
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -25,20 +23,16 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate backend call and authentication check
     const user = users.find(
       (u) => u.email === formData.email && u.password === formData.password
     );
 
     if (user) {
-      console.log(user)
-      // Simulate a delay (e.g., for loading screen)
       setTimeout(() => {
         appState.user = user;
         appState.isAuth = true;
-        console.log(appState.user?.username)
         setLoading(false);
-        router.push("/"); // Redirect to the home page
+        router.push("/");
       }, 2000);
     } else {
       setLoading(false);
@@ -48,16 +42,11 @@ const Auth = () => {
 
   return (
     <section className="min-h-screen min-w-screen bg-black-100">
-      {loading && (
-        <Loading/>
-      )}
+      {loading && <Loading />}
       <div className="container">
-        {/* Top Navigation */}
-        <div className="fixed top-0 left-0 z-50 w-full py-4 transition-all duration-500 bg-black-100 bg-opacity-20 backdrop-blur-[12px] flex justify-center">
+        <div className="fixed top-0 left-0 z-50 w-full py-4 bg-black-100 bg-opacity-20 backdrop-blur-[12px] flex justify-center">
           <img className="w-48" src="/logo-white.png" alt="" />
         </div>
-
-        {/* Login Form */}
         <div className="relative flex justify-center items-center min-h-screen z-10">
           <div className="bg-black bg-opacity-20 backdrop-blur-md rounded-2xl border border-s3 p-8 w-full max-w-md shadow-lg">
             <h1 className="text-2xl font-bold text-white text-center mb-4">
@@ -67,7 +56,6 @@ const Auth = () => {
               Please log in to access your dashboard.
             </p>
             <form onSubmit={handleSubmit}>
-              {/* Email Input */}
               <div className="mb-4">
                 <CustomInput
                   placeholder="Email"
@@ -78,8 +66,6 @@ const Auth = () => {
                   required
                 />
               </div>
-
-              {/* Password Input */}
               <div className="mb-6">
                 <CustomInput
                   type="password"
@@ -90,13 +76,11 @@ const Auth = () => {
                   required
                 />
               </div>
-
-              {/* Submit Button */}
               <div className="text-center">
                 <Button
                   type="submit"
                   markerFill="none"
-                  containerClassName="w-full text-center flex justify-center justify-center"
+                  containerClassName="w-full"
                   disabled={loading}
                 >
                   {loading ? "Loading..." : "Log In"}
@@ -105,8 +89,8 @@ const Auth = () => {
             </form>
           </div>
         </div>
-        <div className="absolute -top-0 right-0 w-[100vw] h-[100vh] pointer-events-none opacity-100">
-          <img src="/hero.gif" alt="Background GIF" className="max-lg:h-auto"/>
+        <div className="absolute -top-0 right-0 w-[100vw] h-[100vh] pointer-events-none">
+          <img src="/hero.gif" alt="Background GIF" className="max-lg:h-auto" />
         </div>
       </div>
     </section>
@@ -114,6 +98,3 @@ const Auth = () => {
 };
 
 export default Auth;
-{
-  /* Background GIF */
-}
