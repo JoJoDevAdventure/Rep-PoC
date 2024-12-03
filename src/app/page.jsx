@@ -14,7 +14,7 @@ const Home = () => {
     // Set a delay of 1.5 seconds before redirecting
     const timer = setTimeout(() => {
       if (appState.isAuth) {
-        router.push('/dashboard'); // Redirect to /dashboard if authenticated
+        router.push('/dashboard/listings'); // Redirect to /dashboard if authenticated
       } else {
         router.push('/auth'); // Redirect to /auth if not authenticated
       }

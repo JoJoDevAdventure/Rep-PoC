@@ -1,15 +1,9 @@
-import axios from "axios"; // Add Axios for API requests
+import { appState } from "@/appState";
 import Lottie from "lottie-react";
 import { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 import loadingAnimation from "../animations/loading.json"; // Path to your Lottie JSON file
 import ImagePicker from "../ImagePicker";
-
-const GITHUB_API_URL =
-  "https://api.github.com/repos/:owner/:repo/contents/:path";
-const githubToken = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-const GITHUB_OWNER = "jospehB-ReplicAIDE";
-const GITHUB_REPO = "PoC-Files";
 
 const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   const [uploadedFile, setUploadedFile] = useState(null); // State to store uploaded image
@@ -23,6 +17,25 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   const mediaRecorderRef = useRef(null); // Ref for media recorder
   const waveformRef = useRef(null); // Ref for WaveSurfer container
   const waveSurferRef = useRef(null); // Ref for WaveSurfer instance
+  const isEnglish = appState.isEnglish; // Check the current language preference
+
+    // Translations for the labels
+    const labels = {
+      title: isEnglish ? "Add Item Listing" : "Agregar artículo",
+      imageLabel: isEnglish ? "Product Image" : "Imagen del producto",
+      takePicture: isEnglish ? "Take Picture" : "Tomar foto",
+      orLabel: isEnglish ? "Or" : "O",
+      browseImages: isEnglish ? "Browse Images" : "Seleccionar imágenes",
+      audioLabel: isEnglish ? "Product Description Audio" : "Audio de descripción del producto",
+      uploadAudio: isEnglish ? "Upload Audio" : "Subir audio",
+      recordAudio: isEnglish ? "Record Audio" : "Grabar audio",
+      stopRecording: isEnglish ? "Stop Recording" : "Detener grabación",
+      cancel: isEnglish ? "Cancel" : "Cancelar",
+      save: isEnglish ? "Save" : "Guardar",
+      errorMessage: isEnglish
+        ? "Both audio and image files are required to save."
+        : "Se requieren archivos de audio e imagen para guardar.",
+    };
 
   // Handle file upload (image)
   const handleFileUpload = (event) => {
@@ -33,105 +46,16 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     }
   };
 
-  // Convert file to Base64
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]); // Strip metadata
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-
-  const uploadFileToGitHub = async (file, fileName) => {
-    if (!githubToken) {
-      console.error(
-        "GitHub token is not defined. Check your .env file.",
-        githubToken
-      );
-      return;
-    }
-
-    try {
-      const base64Content = await fileToBase64(file);
-
-      // Check if the file already exists
-      const checkFileUrl = GITHUB_API_URL.replace(":owner", GITHUB_OWNER)
-        .replace(":repo", GITHUB_REPO)
-        .replace(":path", fileName);
-
-      let existingFileSha = null;
-
-      try {
-        const checkResponse = await axios.get(checkFileUrl, {
-          headers: {
-            Authorization: `Bearer ${githubToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        // If the file exists, get its SHA
-        existingFileSha = checkResponse.data.sha;
-      } catch (checkError) {
-        if (checkError.response && checkError.response.status === 404) {
-          console.log("File does not exist. Creating a new one.");
-        } else {
-          console.error("Error checking file existence:", checkError);
-          throw checkError;
-        }
-      }
-
-      // Upload or update the file
-      const response = await axios.put(
-        checkFileUrl,
-        {
-          message: `Add or update ${fileName}`,
-          content: base64Content,
-          ...(existingFileSha ? { sha: existingFileSha } : {}), // Include SHA if updating
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${githubToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      return response.data.content.download_url; // Return the direct download link
-    } catch (error) {
-      console.error(`Error uploading ${fileName} to GitHub:`, error);
-      throw error;
-    }
-  };
-
-  // Handle "Save" functionality
-  const handleSave = async () => {
-    if (!uploadedFile || !audioBlob) {
-      console.error("Both audio and image files are required to save.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const imageLink = await uploadFileToGitHub(
-        uploadedFile,
-        `images/${uploadedFile.name}`
-      );
-      const audioLink = await uploadFileToGitHub(
-        audioBlob,
-        `audio/${audioBlob.name}`
-      );
-
-      console.log("Image Link:", imageLink);
-      console.log("Audio Link:", audioLink);
-
-      onSave({ imageLink, audioLink });
-    } catch (error) {
-      console.error("Error saving files:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+// Handle "Save" functionality
+const handleSave = () => {
+  if (!uploadedFile || !audioBlob) {
+    console.error("Both audio and image files are required to save.");
+    alert("Error: Both audio and image files are required to save.");
+    return;
+  }
+  console.log("uploaded image :",uploadedFile,"uploaded audio :", audioBlob)
+  onSave({ uploadedFile, audioBlob });
+};
 
   // Handle removing image
   const removeImage = () => {
@@ -227,11 +151,23 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     }
   };
 
-  // Handle capturing the photo
-  const handleCapture = (image) => {
-    setImagePreview(image); // Save the captured image
-    setIsImagePickerOpen(false); // Close the picker
-  };
+// Handle capturing the photo
+const handleCapture = (image) => {
+  setImagePreview(image); // Save the captured image preview
+
+  // Convert the base64 or URL image to a Blob
+  fetch(image)
+    .then((res) => res.blob())
+    .then((blob) => {
+      setUploadedFile(blob); // Set the Blob as the uploaded file
+    })
+    .catch((error) => {
+      console.error("Error converting image to blob:", error);
+      alert("Failed to process the image. Please try again.");
+    });
+
+  setIsImagePickerOpen(false); // Close the picker
+};
 
   const handleCameraOpening = () => {
     setIsImagePickerOpen(true);
@@ -263,13 +199,13 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
         )}
 
         <h2 className="text-lg font-bold mb-4 text-black-100">
-          Add Product Listing
+          {labels.title}
         </h2>
 
         {/* Image Upload */}
         <div className="mb-4">
           <label htmlFor="image" className="block text-sm font-medium mb-2">
-            Product Image
+            {labels.ImagePicker}
           </label>
 
           {imagePreview ? (
@@ -307,11 +243,11 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                 >
                   <path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z" />
                 </svg>
-                Take Picture
+                {labels.takePicture}
               </div>
               <div className="w-full h-20 border-2 border-dashed border-p1 rounded-lg flex flex-col items-center justify-center text-center p-4 relative">
                 <div className="flex flex-col justify-center items-center">
-                  <p>Or</p>
+                  <p>{labels.orLabel}</p>
                   <label className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 w-full text-m">
                     <input
                       type="file"
@@ -329,7 +265,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                     >
                       <path d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
                     </svg>
-                    Browse Images
+                    {labels.browseImages}
                   </label>
                 </div>
               </div>
@@ -340,7 +276,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
         {/* Audio Upload/Record */}
         <div className="mb-4 mt-8">
           <label htmlFor="audio" className="block text-sm font-medium mb-2">
-            Product Description Audio
+            {labels.audioLabel}
           </label>
           {audioBlob ? (
             <div className="relative">
@@ -385,7 +321,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                   alt="Upload"
                   className="w-5 h-5"
                 />
-                Upload Audio
+                {labels.uploadAudio}
               </label>
               {isRecording ? (
                 <button
@@ -397,7 +333,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                     alt="Stop Recording"
                     className="w-5 h-5"
                   />
-                  Stop Recording
+                  {labels.stopRecording}
                 </button>
               ) : (
                 <button
@@ -409,7 +345,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                     alt="Record Audio"
                     className="w-5 h-5"
                   />
-                  Record Audio
+                  {labels.recordAudio}
                 </button>
               )}
             </div>
@@ -422,7 +358,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-gray-500 border-2 border-gray-500 hover:bg-gray-200"
           >
-            Cancel
+            {labels.cancel}
           </button>
           <button
             onClick={handleSave}
@@ -433,7 +369,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             }`}
             disabled={!audioBlob && !uploadedFile}
           >
-            Save
+            {labels.save}
           </button>
         </div>
       </div>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useTheme } from "@/app/context/themeContext";
-import { appState } from "@/appState"; // Application state to access the username
-import { MenuItems } from "@/data"; // Mock data for calls
+import { appState } from "@/appState"; // Application state
+import Loading from "@/Components/Loading"; // Import your loading component
 import dynamic from "next/dynamic"; // For dynamic imports
+import { useRouter } from "next/navigation"; // For client-side navigation
+import { useEffect, useState } from "react"; // React hooks
+import { fetchRecipes } from "../Service"; // Import the fetch function
 
 // Dynamically import components with SSR disabled
 const Humphry = dynamic(() => import("@/Components/Humphry"), { ssr: false });
@@ -13,10 +16,40 @@ const MainContent = dynamic(() => import("./MainContent"), { ssr: false });
 
 const page = () => {
   const { isDarkMode } = useTheme(); // Get the current theme (dark or light mode)
+  const router = useRouter(); // Next.js router for navigation
+  const [recipes, setRecipes] = useState([]); // State to store recipes
+  const [loading, setLoading] = useState(true); // State to track loading
+
+  useEffect(() => {
+    // Redirect user to the home page if no username is found in the app state
+    if (appState.user == null) {
+      router.push("/"); // Redirects to the root ("/") if not logged in
+      return;
+    }
+
+    // Fetch recipes from Firestore
+    const loadRecipes = async () => {
+      try {
+        const fetchedRecipes = await fetchRecipes();
+        setRecipes(fetchedRecipes); // Update state with fetched recipes
+        console.log(fetchedRecipes)
+      } catch (error) {
+        console.error("Failed to fetch recipes:", error);
+      } finally {
+        setLoading(false); // Stop loading spinner
+      }
+    };
+
+    loadRecipes(); // Call the fetch function
+  }, [router]); // Dependency ensures this runs whenever `router` changes
+
+  if (loading) {
+    return <Loading />; // Show loading spinner while fetching data
+  }
 
   return (
     <div className="flex md:max-h-[100vh] pb-12 md:pb-0 md:overflow-hidden">
-      <Humphry/>
+      <Humphry />
 
       {/* Sidebar Navigation */}
       <SideBar />
@@ -27,7 +60,7 @@ const page = () => {
         <Header username={appState.user?.username} />
 
         {/* Main Content Section */}
-        <MainContent menuItems={MenuItems} isDarkMode={isDarkMode} />
+        <MainContent menuItems={recipes} isDarkMode={isDarkMode} />
       </div>
     </div>
   );

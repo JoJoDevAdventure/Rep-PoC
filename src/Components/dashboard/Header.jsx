@@ -1,7 +1,8 @@
-import ThemeSwitch from "@/Components/ThemeSwitch"; // The custom theme toggle component
+import { appState } from "@/appState";
 import { useTheme } from "../../app/context/themeContext"; // Theme context to manage dark/light mode
+import LanguageSwitch from "../LanguageSwitch";
 
-const Header = ({ username }) => {
+const Header = ({ username, onRefresh }) => {
   const { isDarkMode } = useTheme(); // Retrieve the current theme (dark or light mode)
 
   return (
@@ -18,7 +19,7 @@ const Header = ({ username }) => {
             isDarkMode ? "text-gray-200" : "text-gray-600" // Adjust text color for theme
           }`}
         >
-          Good morning,
+          {appState.isEnglish ? "Good Morning" : "Buenos días"}
         </p>
         <div className="flex flex-col md:flex-row justify-start md:gap-4">
           {/* Welcome Message */}
@@ -27,7 +28,7 @@ const Header = ({ username }) => {
               isDarkMode ? "text-p4" : "text-black" // Dynamic heading color
             }`}
           >
-            Welcome back,
+            {appState.isEnglish ? "Welcome back" : "Bienvenido"}
           </h1>
           <span
             className={`text-3xl md:text-4xl font-light w-auto ${
@@ -42,11 +43,16 @@ const Header = ({ username }) => {
       {/* Upgrade Button and Theme Toggle */}
       <div className="flex items-center justify-between w-full md:justify-end gap-4 md:flex-wrap md:w-1/3">
         {/* Upgrade Button */}
-        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow hover:bg-orange-600">
-          Upgrade
+        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow hover:bg-orange-600" 
+        onClick={onRefresh}
+        >
+          {appState.isEnglish ? "Upgrade" : "Actualiza"}
         </button>
-        {/* Theme Toggle Switch */}
-        <ThemeSwitch /> {/* Renders the custom theme switch component */}
+        <div>
+          <LanguageSwitch />
+          {/* Theme Toggle Switch */}
+          {/* <ThemeSwitch /> Renders the custom theme switch component */}
+        </div>
       </div>
     </header>
   );

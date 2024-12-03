@@ -1,54 +1,53 @@
+"use client";
+
 import ActionsBar from "@/Components/dashboard/ActionsBar";
 import ListingPopForm from "@/Components/dashboard/ListingPopForm";
+import Loading from "@/Components/Loading";
+import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react"; // React state management
 import MenuItems from "../MenuItems";
+import { processListing } from "../Service"; // Import the services
+
 // Import appState from your state file
-import { appState } from "@/appState";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../../../../firebase"; // Import Firestore instance
 
 const MainContent = ({ menuItems, isDarkMode }) => {
   const [currentCall, setCurrentCall] = useState(null); // State to track the currently active call
   const [isPopUpOpen, setIsPopUpOpen] = useState(false); // State to track the pop-up form visibility
+  const [loading, setIsLoading] = useState(false); // State to show/hide loading animation
 
-  const saveToFirestore = async (formData) => {
-    try {
-      const docRef = await addDoc(collection(db, "products"), formData); // "listings" is the collection name
-      console.log("Document written with ID:", docRef.id);
-      return docRef.id; // Return the document ID
-    } catch (error) {
-      console.error("Error adding document to Firestore:", error);
-      throw error;
-    }
-  };
+  const router = useRouter(); // Router instance for navigation
 
-  const handleSave = async ({ imageLink, audioLink }) => {
-    if (!appState.user) {
-      console.error("User information is not available in appState.");
-      return;
-    }
-
-    const formData = {
-      audioLink: audioLink, // Use the provided audio link
-      imageLink: imageLink, // Use the provided image link
-      title: "",
-      description: "",
-      price: 0,
-    };
-
-    try {
-      const docId = await saveToFirestore(formData); // Save to Firestore
-      console.log("Saved to Firestore with ID:", docId);
-    } catch (error) {
-      console.error("Failed to save to Firestore:", error);
-    }
-
-    setIsPopUpOpen(false); // Close the pop-up after saving
-  };
 
   // Handle cancel action in the pop-up form
   const handleCancel = () => {
     setIsPopUpOpen(false); // Close the pop-up when canceled
+  };
+
+  const handleSave = async ({ uploadedFile, audioBlob }) => {
+    setIsLoading(true)
+    setIsPopUpOpen(false)
+
+    console.log("uploaded image :",uploadedFile,"uploaded audio :", audioBlob)
+
+    try {
+      const response = await processListing({ uploadedFile, audioBlob });
+      console.log("Server response:", response);
+      setIsLoading(false)
+    } catch (error) {
+      window.alert("Failed to save")
+      setIsLoading(false)
+    } finally {
+      setIsPopUpOpen(false); // Close the pop-up after saving
+      setIsLoading(false)
+    }
+  };
+
+  const handleSelect = (item) => {
+    router.push(
+      `/dashboard/listings/details?item=${encodeURIComponent(
+        JSON.stringify(item)
+      )}`
+    );
   };
 
   return (
@@ -57,20 +56,7 @@ const MainContent = ({ menuItems, isDarkMode }) => {
         isDarkMode ? "bg-s1 bg-opacity-[98%]" : "bg-white" // Dynamic background based on theme
       }`}
     >
-      {/* Back Button */}
-      {currentCall && (
-        <button
-          onClick={() => setCurrentCall(null)} // Reset current call
-          className={`mb-4 px-4 py-2 rounded-lg ${
-            isDarkMode
-              ? "bg-gray-700 text-gray-300"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-gray-300`}
-        >
-          Back
-        </button>
-      )}
-
+      {loading && <Loading />}
       {/* Listing Pop-Up Form */}
       {isPopUpOpen && (
         <ListingPopForm
@@ -89,6 +75,7 @@ const MainContent = ({ menuItems, isDarkMode }) => {
       <MenuItems
         menuItems={menuItems} // Pass the list of calls
         isDarkMode={isDarkMode} // Pass theme information
+        onSelect={handleSelect}
       />
     </div>
   );

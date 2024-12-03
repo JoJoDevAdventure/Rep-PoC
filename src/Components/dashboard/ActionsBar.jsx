@@ -1,3 +1,6 @@
+"use client";
+
+import { appState } from "@/appState";
 import { useState } from "react";
 
 const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
@@ -22,6 +25,15 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
   const borderColor = isDarkMode ? "border-p1/20" : "border-p1/10";
   const focusRingColor = isDarkMode ? "focus:ring-gray-500" : "focus:ring-orange-500";
 
+  // Text content based on language
+  const searchPlaceholder = appState.isEnglish ? "Search Items" : "Buscar Ítem del menú...";
+  const sortByLabel = appState.isEnglish ? "Sort by" : "Ordenar por";
+  const dateOption = appState.isEnglish ? "Date" : "Fecha";
+  const priceOption = appState.isEnglish ? "Price" : "Precio";
+  const nameOption = appState.isEnglish ? "Name" : "Nombre";
+  const addProductLabel = appState.isEnglish ? "Item" : "Producto";
+  const editListingsLabel = appState.isEnglish ? "Edit listings" : "Editar productos";
+
   return (
     <div className={`gap-4 items-center py-4 ${bgColor}`}>
       {/* Search and Sort Section */}
@@ -29,7 +41,7 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
         {/* Search Bar */}
         <input
           type="text"
-          placeholder="Search listings..."
+          placeholder={searchPlaceholder}
           value={searchQuery}
           onChange={handleSearch}
           className={`px-4 py-2 ${textColor} ${borderColor} border-2 rounded-lg w-full focus:outline-none focus:ring-2 ${bgColor} ${focusRingColor} md:w-1/3 `}
@@ -42,20 +54,21 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
             onChange={handleSortChange}
             className={`py-2 border-2 px-4 ${borderColor} rounded-lg ${textColor} ${bgColor} focus:outline-none focus:ring-2 ${focusRingColor} md:w-auto w-1/3`}
           >
-            <option value="">Sort by</option>
-            <option value="date">Date</option>
-            <option value="price">Price</option>
-            <option value="name">Name</option>
+            <option value="">{sortByLabel}</option>
+            <option value="date">{dateOption}</option>
+            <option value="price">{priceOption}</option>
+            <option value="name">{nameOption}</option>
           </select>
 
           {/* Action Buttons */}
           <div className="flex gap-4 md:w-auto justify-center w-2/3 pl-4">
             {/* Edit Listings Icon */}
             <button
-              onClick={() => console.log("Edit listings")}
+              onClick={() => console.log(editListingsLabel)}
               className={`p-2 rounded-full ${
                 isDarkMode ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"
               }`}
+              title={editListingsLabel}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -87,8 +100,16 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
                   : "bg-orange-500 text-white hover:bg-orange-600"
               }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffff"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-              Product
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#ffff"
+              >
+                <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+              </svg>
+              {addProductLabel}
             </button>
           </div>
         </div>

@@ -12,6 +12,7 @@ const SideBar = () => {
       name: "Dashboard",
       path: "/dashboard",
       icon: "dashboard-icon.svg",
+      isDisabled: true,
     },
     {
       name: "Listings",
@@ -37,11 +38,18 @@ const SideBar = () => {
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill={`${currentPath == "/dashboard" ? "#fb7038" : isDarkMode ? "#ffffff" : "#000000"}`}
+          fill={`${
+            currentPath == "/dashboard"
+              ? "#fb7038"
+              : isDarkMode
+              ? "#ffffff"
+              : "#000000"
+          }`}
         >
           <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z" />
         </svg>
       ),
+      isDisabled: true,
     },
     {
       name: "Listings",
@@ -52,7 +60,13 @@ const SideBar = () => {
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill={`${currentPath == "/dashboard/listings" ? "#fb7038" : isDarkMode ? "#ffffff" : "#000000"}`}
+          fill={`${
+            currentPath == "/dashboard/listings"
+              ? "#fb7038"
+              : isDarkMode
+              ? "#ffffff"
+              : "#000000"
+          }`}
         >
           <path d="M120-240v-80h240v80H120Zm0-200v-80h480v80H120Zm0-200v-80h720v80H120Z" />
         </svg>
@@ -70,7 +84,13 @@ const SideBar = () => {
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill={`${currentPath == "/dashboard/crm" ? "#fb7038" : isDarkMode ? "#ffffff" : "#000000"}`}
+          fill={`${
+            currentPath == "/dashboard/crm"
+              ? "#fb7038"
+              : isDarkMode
+              ? "#ffffff"
+              : "#000000"
+          }`}
         >
           <path d="M280-280h80v-200h-80v200Zm320 0h80v-400h-80v400Zm-160 0h80v-120h-80v120Zm0-200h80v-80h-80v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
         </svg>
@@ -86,7 +106,13 @@ const SideBar = () => {
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill={`${currentPath == "/account" ? "#fb7038" : isDarkMode ? "#ffffff" : "#000000"}`}
+          fill={`${
+            currentPath == "/account"
+              ? "#fb7038"
+              : isDarkMode
+              ? "#ffffff"
+              : "#000000"
+          }`}
         >
           <path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" />
         </svg>
@@ -212,9 +238,13 @@ const SideBar = () => {
           {leftMobileMenuItems.map((item) => (
             <Link
               key={item.name}
-              href={item.path}
+              href={!item.isDisabled ? item.path : "#"}
               className={`relative flex flex-col items-center gap-1 z-50 ${
-                currentPath === item.path ? "text-s3" : "hover:text-s3"
+                item.isDisabled
+                  ? "opacity-30 pointer-events-none" // Add styles for disabled items
+                  : currentPath === item.path
+                  ? "text-s3" // Highlight active item
+                  : "hover:text-s3" // Hover style for active items
               }`}
             >
               {item.icon}
@@ -231,7 +261,7 @@ const SideBar = () => {
               href={!item.isDisabled ? item.path : "#"} // Disable link if item is disabled
               className={`flex flex-col items-center gap-1 z-50 ${
                 item.isDisabled
-                  ? "opacity-50 pointer-events-none" // Add styles for disabled items
+                  ? "opacity-30 pointer-events-none" // Add styles for disabled items
                   : currentPath === item.path
                   ? "text-s3" // Highlight active item
                   : "hover:text-s3" // Hover style for active items
