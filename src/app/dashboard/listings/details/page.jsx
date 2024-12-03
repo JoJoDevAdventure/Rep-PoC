@@ -1,21 +1,18 @@
 "use client";
 
-import { useTheme } from "@/app/context/themeContext";
 import { appState } from "@/appState"; // Import appState for language preference
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import ReactAudioPlayer from "react-audio-player";
 
-const DetailsPage = () => {
+const DetailsContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const itemString = searchParams.get("item"); // Get the query parameter
   const item = itemString ? JSON.parse(decodeURIComponent(itemString)) : null; // Parse the item
 
-  const { isDarkMode } = useTheme(); // Get the current theme (dark or light mode)
-
-  // Get language preference
-  const isEnglish = appState.isEnglish;
+  const isEnglish = appState.isEnglish; // Get language preference
   const content = isEnglish ? item?.eng : item?.esp; // Use English or Spanish content
 
   if (!item) {
@@ -61,7 +58,6 @@ const DetailsPage = () => {
 
         {/* Editable Fields Section */}
         <div className="w-full max-w-2xl mt-6 space-y-4">
-          {/* Title Field */}
           <div>
             <label
               htmlFor="title"
@@ -77,7 +73,6 @@ const DetailsPage = () => {
             />
           </div>
 
-          {/* Description Field */}
           <div>
             <label
               htmlFor="description"
@@ -93,7 +88,6 @@ const DetailsPage = () => {
             ></textarea>
           </div>
 
-          {/* Price Field */}
           <div>
             <label
               htmlFor="price"
@@ -121,6 +115,14 @@ const DetailsPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const DetailsPage = () => {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <DetailsContent />
+    </Suspense>
   );
 };
 
