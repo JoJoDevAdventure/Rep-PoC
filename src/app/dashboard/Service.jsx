@@ -141,6 +141,7 @@ export const saveListing = async ({ imageLink, audioLink }) => {
       headers: {
         "Content-Type": "application/json",
       },
+      mode: "no-cors", // Avoid mixed content blocking
       body: JSON.stringify(formData),
     });
 
