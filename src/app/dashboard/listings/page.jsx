@@ -2,7 +2,6 @@
 
 import { useTheme } from "@/app/context/themeContext";
 import { appState } from "@/appState"; // Application state
-import Loading from "@/Components/Loading"; // Import your loading component
 import dynamic from "next/dynamic"; // For dynamic imports
 import { useRouter } from "next/navigation"; // For client-side navigation
 import { useEffect, useState } from "react"; // React hooks
@@ -13,6 +12,7 @@ const Humphry = dynamic(() => import("@/Components/Humphry"), { ssr: false });
 const Header = dynamic(() => import("@/Components/dashboard/Header"), { ssr: false });
 const SideBar = dynamic(() => import("@/Components/dashboard/SideBar"), { ssr: false });
 const MainContent = dynamic(() => import("./MainContent"), { ssr: false });
+const Loading = dynamic(() => import("@/Components/Loading"), { ssr: false });
 
 const page = () => {
   const { isDarkMode } = useTheme(); // Get the current theme (dark or light mode)
