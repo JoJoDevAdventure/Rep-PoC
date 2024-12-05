@@ -1,6 +1,9 @@
 import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
+import { addDoc, collection, doc, getDoc, getDocs } from "firebase/firestore"; // Firestore functions
+import { db } from "../../../firebase"; // Firestore instance
+
 const GITHUB_API_URL =
   "https://api.github.com/repos/:owner/:repo/contents/:path";
 const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
@@ -9,7 +12,6 @@ const GITHUB_REPO = "PoC-Files";
 const API_URL = "http://sea.replicaide.com:8000/api/process_item/";
 
 export const fileToBase64 = (file) => {
-
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -40,7 +42,6 @@ export const fileToBase64 = (file) => {
  * @returns {string} - The download URL of the uploaded file.
  */
 export const uploadFileToGitHub = async (file, fileName) => {
-
   if (!GITHUB_TOKEN) {
     console.error("GitHub token is not defined. Check your .env file.");
     throw new Error("GitHub token is missing.");
@@ -141,7 +142,6 @@ export const saveListing = async ({ imageLink, audioLink }) => {
       headers: {
         "Content-Type": "application/json",
       },
-      mode: "no-cors", // Avoid mixed content blocking
       body: JSON.stringify(formData),
     });
 
@@ -177,9 +177,6 @@ export const saveListing = async ({ imageLink, audioLink }) => {
  */
 
 export const processListing = async ({ uploadedFile, audioBlob }) => {
-  console.log("Uploaded File:", uploadedFile);
-  console.log("Audio Blob:", audioBlob);
-
   // Validate inputs
   if (!(uploadedFile instanceof Blob)) {
     console.error("Uploaded image is not a valid Blob or File:", uploadedFile);
@@ -211,8 +208,11 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     }
 
     // Save the listing once links are generated
-    console.log("Saving listing...");
-    const response = await saveListing({ imageLink, audioLink });
+    console.log("Processing...");
+    // const response = await saveListing({ imageLink, audioLink });
+
+    const response = await analyzeMedia(audioLink, imageLink);
+
     console.log("Listing saved successfully:", response);
 
     return response; // Return the response from the saveListing function
@@ -222,8 +222,133 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
   }
 };
 
-import { addDoc, collection, getDocs } from "firebase/firestore"; // Firestore functions
-import { db } from "../../../firebase"; // Firestore instance
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, // Set your API key here
+  dangerouslyAllowBrowser: true,
+});
+
+/**
+ * Process audio and image using OpenAI API
+ * @param {string} audioUrl - The URL of the audio file
+ * @param {string} imageUrl - The URL of the image file
+ * @returns {Promise<object>} - Transformed data or error response
+ */
+export const analyzeMedia = async (audioUrl, imageUrl) => {
+  try {
+    // Define the OpenAI prompt
+    const prompt = `
+      You are an intelligent assistant tasked with analyzing audio and image files from given URLs and generating a structured JSON response. Here are the requirements:
+
+      1. Input: You will receive a JSON object containing two fields:
+         - audio: A URL linking to an audio file.
+         - image: A URL linking to an image file.
+
+      2. Output: Provide a JSON object in the following format:
+         {
+           audio: "Link to the audio (keep it the same as the input)",
+           image: "Link to the image (keep it the same as the input)",
+           eng: {
+             title: "Short title in English based on the audio and image content",
+             description: "description in English describing the audio content confirmed by the image, don't start with "audio description of.." put directly what the audio describes.",
+             marketing_description: "Catchy marketing description in English, describing the ingredients, taste, mid length",
+           },
+           esp: {
+             title: "Short title in Spanish based on the audio and image content",
+             description: "description in Spanish describing the audio content confirmed by the image, don't start with "audio description of.." put directly what the audio describes.",
+             marketing_description: "Catchy marketing description in Spanish, describing the ingredients, taste, mid length",
+           },
+           price: "Price of the product or service as inferred from the content, or suggest a price if not specified"
+         }
+
+      3. Error Handling:
+         - If there is an issue processing the input (e.g., invalid URL, missing content, or any other issue), return the following JSON format:
+           {
+             error: "Description of the error"
+           }
+    `;
+
+    const userInput = `
+        audio: ${audioUrl}
+        /n
+        image: ${imageUrl}
+      `;
+
+    console.log(userInput);
+
+    // Call the OpenAI API
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: userInput,
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "media_analysis_schema",
+          schema: {
+            type: "object",
+            properties: {
+              audio: {
+                description: "The input audio link",
+                type: "string",
+              },
+              image: {
+                description: "The input image link",
+                type: "string",
+              },
+              eng: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  marketing_description: { type: "string" },
+                },
+                required: ["title", "description", "marketing_description"],
+              },
+              esp: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  marketing_description: { type: "string" },
+                },
+                required: ["title", "description", "marketing_description"],
+              },
+              price: {
+                description: "The inferred price or 'Not specified'",
+                type: "string",
+              },
+            },
+            required: ["audio", "image", "eng", "esp", "price"],
+            additionalProperties: false,
+          },
+        },
+      },
+      temperature: 0.2,
+    });
+
+    // Extract the structured content from the response
+    const output = saveToFirebase(completion.choices[0].message.content);
+
+    
+
+    return output; // Already formatted as JSON per schema
+  } catch (error) {
+    console.error("Error analyzing media:", error.message);
+    return {
+      error: error.message,
+    };
+  }
+};
 
 /**
  * Converts the API response into the desired structure.
@@ -252,28 +377,39 @@ export const transformApiResponse = (response) => {
       description: processed_output.spanish.description,
       price: parseFloat(processed_output.price.replace(" USD", "")), // Use the same price for Spanish
     },
-    price: processed_output.price
+    price: processed_output.price,
   };
 
   return transformedData;
 };
 
+
 /**
- * Saves the transformed data to a Firebase collection.
- * @param {Object} data - The transformed data object.
- * @returns {Promise<void>} - Promise resolving to void on success.
+ * Saves the JSON output from ChatGPT to a Firebase Firestore collection.
+ * @param {string} jsonData - The JSON string output from ChatGPT.
+ * @returns {Promise<string>} - Promise resolving to the document ID on success.
  */
-export const saveToFirebase = async (data) => {
-  if (!data) {
-    throw new Error("No data provided to save.");
+export const saveToFirebase = async (jsonData) => {
+  if (!jsonData) {
+    throw new Error("No JSON data provided to save.");
   }
 
   try {
-    const docRef = await addDoc(collection(db, "menu_items"), data);
+    // Parse the JSON string into an object
+    const dataObject = JSON.parse(jsonData);
+
+    // Validate required fields in the parsed object
+    if (!dataObject.audio || !dataObject.image || !dataObject.eng || !dataObject.esp) {
+      throw new Error("Invalid data structure: Required fields are missing.");
+    }
+
+    // Add the parsed object to the Firestore collection
+    const docRef = await addDoc(collection(db, "menu_items"), dataObject);
+
     console.log("Document successfully written with ID:", docRef.id);
     return docRef.id; // Return the document ID for reference
   } catch (error) {
-    console.error("Error saving to Firestore:", error);
+    console.error("Error saving to Firestore:", error.message);
     throw error;
   }
 };
@@ -312,3 +448,28 @@ export const processAndSave = async (apiResponse) => {
   }
 };
 
+/**
+ * Fetch a single recipe/document by ID from Firestore.
+ * @param {string} id - The ID of the document to fetch.
+ * @returns {Object} The document data, including the ID.
+ */
+export const fetchRecipeById = async (id) => {
+  try {
+    // Reference to the document in the "menu_items" collection
+    const docRef = doc(db, "menu_items", id);
+
+    // Get the document
+    const docSnap = await getDoc(docRef);
+
+    // Check if the document exists
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() }; // Include the document ID
+    } else {
+      console.error(`No document found with ID: ${id}`);
+      return null; // Or throw an error if preferred
+    }
+  } catch (error) {
+    console.error(`Error fetching recipe with ID ${id} from Firestore:`, error);
+    throw error;
+  }
+};

@@ -31,7 +31,6 @@ const MainContent = ({ menuItems, isDarkMode }) => {
 
     try {
       const response = await processListing({ uploadedFile, audioBlob });
-      console.log("Server response:", response);
       setIsLoading(false)
     } catch (error) {
       window.alert("Failed to save")
@@ -43,11 +42,7 @@ const MainContent = ({ menuItems, isDarkMode }) => {
   };
 
   const handleSelect = (item) => {
-    router.push(
-      `/dashboard/listings/details?item=${encodeURIComponent(
-        JSON.stringify(item)
-      )}`
-    );
+    router.push(`/dashboard/listings/details/${item.id}`);
   };
 
   return (

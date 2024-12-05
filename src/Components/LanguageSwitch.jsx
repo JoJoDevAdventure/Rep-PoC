@@ -1,16 +1,22 @@
 "use client";
 
 import { appState } from "@/appState"; // Access appState
+import { usePathname, useRouter } from "next/navigation"; // Import Next.js hooks
 import { useState } from "react";
 
 const LanguageSwitch = () => {
   const [isOpen, setIsOpen] = useState(false); // Toggle state for language options
   const isEnglish = appState.isEnglish; // Get current language
+  const router = useRouter(); // Hook to navigate
+  const currentPath = usePathname(); // Get the current path
 
   // Handle language selection
   const handleLanguageChange = (language) => {
     appState.isEnglish = language === "english";
     setIsOpen(false); // Close the selection menu after choosing
+
+    // Trigger navigation to the current path to "refresh" with the new language
+    router.push(currentPath);
   };
 
   return (

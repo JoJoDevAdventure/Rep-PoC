@@ -1,3 +1,4 @@
+import { appState } from "@/appState"; // Import appState for language preference
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "../../app/context/themeContext";
@@ -5,32 +6,12 @@ import { useTheme } from "../../app/context/themeContext";
 const SideBar = () => {
   const { isDarkMode } = useTheme(); // Get the current theme (dark or light mode)
   const currentPath = usePathname(); // Get the current route
+  const isEnglish = appState.isEnglish; // Check if the language is English
 
-  // Define menu items for the main navigation
+  // Define menu items for bottom navigation
   const menuItems = [
     {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: "dashboard-icon.svg",
-      isDisabled: true,
-    },
-    {
-      name: "Listings",
-      path: "/dashboard/listings",
-      icon: "listings-icon.svg",
-    },
-    {
-      name: "CRM",
-      path: "/dashboard/crm",
-      icon: "crm-icon.svg",
-      isDisabled: true, // Example of a disabled menu item
-    },
-  ];
-
-  // Define menu items for the mobile navigation (split into left and right sections)
-  const leftMobileMenuItems = [
-    {
-      name: "Dashboard",
+      name: isEnglish ? "Home" : "Inicio",
       path: "/dashboard",
       icon: (
         <svg
@@ -46,13 +27,13 @@ const SideBar = () => {
               : "#000000"
           }`}
         >
-          <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z" />
+          <path d="M480-120 120-480l60-60 120 120v-300h240v300l120-120 60 60-360 360Zm0-134 200-200-80-80v-246H360v246l-80-80-200 200 400-400 400 400-400 400ZM360-480Zm240-160ZM360-480Zm240-160Z" />
         </svg>
       ),
       isDisabled: true,
     },
     {
-      name: "Listings",
+      name: isEnglish ? "Listings" : "Listados",
       path: "/dashboard/listings",
       icon: (
         <svg
@@ -72,12 +53,9 @@ const SideBar = () => {
         </svg>
       ),
     },
-  ];
-
-  const rightMobileMenuItems = [
     {
-      name: "CRM",
-      path: "/dashboard/crm",
+      name: isEnglish ? "Inbox" : "Chats",
+      path: "/crm",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -85,20 +63,20 @@ const SideBar = () => {
           viewBox="0 -960 960 960"
           width="24px"
           fill={`${
-            currentPath == "/dashboard/crm"
+            currentPath == "/dashboard/inbox"
               ? "#fb7038"
               : isDarkMode
               ? "#ffffff"
               : "#000000"
           }`}
         >
-          <path d="M280-280h80v-200h-80v200Zm320 0h80v-400h-80v400Zm-160 0h80v-120h-80v120Zm0-200h80v-80h-80v80ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
+          <path d="M200-160q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h560q33 0 56.5 23.5T840-720v480q0 33-23.5 56.5T760-160H200Zm0-80h560v-170H620q-11 33-37.5 52T520-340H440q-34 0-60.5-19T342-411H200v171Zm0-251h148q15 24 40.5 39t54.5 15h80q30 0 55.5-15t39.5-39h148v-229H200v229Zm0-229v229-229Zm560 480v-170H760v170ZM200-720v170h142q-6-10-10-23t-4-27q0-32 22-54.5t54-22.5h80q32 0 54 22.5t22 54.5q0 14-4 27t-10 23h142v-170H200Zm560 170v-170 170Z" />
         </svg>
       ),
-      isDisabled: true, // Example of a disabled menu item
+      isDisabled: true,
     },
     {
-      name: "My account",
+      name: isEnglish ? "My Account" : "Mi cuenta",
       path: "/account",
       icon: (
         <svg
@@ -120,158 +98,33 @@ const SideBar = () => {
     },
   ];
 
-  // Define menu items for the account section
-  const accountItems = [
-    {
-      name: "My account",
-      path: "/account",
-      icon: "account-icon.svg",
-    },
-    {
-      name: "Help and support",
-      path: "/support",
-      icon: "help-icon.svg",
-    },
-    {
-      name: "Logout",
-      path: "/logout",
-      icon: "logout-icon.svg",
-    },
-  ];
-
   return (
     <>
-      {/* Sidebar for larger screens */}
+      {/* Bottom Navigation */}
       <div
-        className={`hidden lg:flex h-screen w-64 flex-col justify-between p-6 overflow-hidden z-10 ${
-          isDarkMode
-            ? "bg-s1 text-white" // Dark mode styles
-            : "bg-gray-50 text-black shadow-light" // Light mode styles
-        }`}
-      >
-        {/* Logo Section */}
-        <div>
-          <img
-            className="w-48 mx-0 mb-10"
-            src={`/logo-${isDarkMode ? "white" : "black"}.png`} // Adjust logo based on theme
-            alt="Logo"
-          />
-
-          {/* Main Menu Section */}
-          <div>
-            <p className="uppercase text-sm font-semibold text-gray-500 mb-4">
-              Menu
-            </p>
-            <ul className="space-y-0 w-full">
-              {menuItems.map((item) => (
-                <li
-                  key={item.name}
-                  className={`relative -mx-6 flex items-center gap-4 py-4 px-6 cursor-pointer ${
-                    currentPath === item.path
-                      ? "bg-s3/10 text-s3" // Highlight active menu item
-                      : isDarkMode
-                      ? "hover:bg-s3/5" // Hover styles for dark mode
-                      : "hover:bg-s3/5" // Hover styles for light mode
-                  } ${
-                    item.isDisabled
-                      ? "opacity-50 pointer-events-none hover:bg-transparent" // Styles for disabled items
-                      : ""
-                  }`}
-                >
-                  {currentPath === item.path && (
-                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-s3" />
-                  )}
-
-                  <img
-                    src={`/dashboard-icons/${item.icon}`}
-                    alt={`${item.name} icon`}
-                    className={`w-5 h-5 ${
-                      currentPath === item.path ? "filter-p1" : ""
-                    }`}
-                  />
-                  <Link href={item.path}>{item.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Account Section */}
-        <div>
-          <p className="uppercase text-sm font-semibold text-gray-500 mb-4">
-            Your account
-          </p>
-          <ul className="space-y-4">
-            {accountItems.map((item) => (
-              <li
-                key={item.name}
-                className={`relative flex items-center gap-4 p-3 rounded-lg cursor-pointer ${
-                  currentPath === item.path
-                    ? "text-s3"
-                    : isDarkMode
-                    ? "hover:bg-s3/5"
-                    : "hover:bg-s3/5"
-                }`}
-              >
-                <img
-                  src={`/dashboard-icons/${item.icon}`}
-                  alt={`${item.name} icon`}
-                  className={`w-5 h-5 ${
-                    currentPath === item.path ? "filter-p1" : ""
-                  }`}
-                />
-                <Link href={item.path}>{item.name}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Bottom Navigation for smaller screens */}
-      <div
-        className={`fixed bottom-0 left-0 w-full flex lg:hidden justify-between items-center py-3 z-10 ${
+        className={`fixed bottom-0 left-0 w-full flex justify-around items-center py-3 z-50 ${
           isDarkMode ? "bg-s1 text-white" : "bg-gray-50 text-black"
         }`}
       >
-        {/* Left Section */}
-        <div className="relative flex justify-start gap-4 min-w-2/5 pl-3 z-50">
-          {leftMobileMenuItems.map((item) => (
-            <Link
-              key={item.name}
-              href={!item.isDisabled ? item.path : "#"}
-              className={`relative flex flex-col items-center gap-1 z-50 ${
-                item.isDisabled
-                  ? "opacity-30 pointer-events-none" // Add styles for disabled items
-                  : currentPath === item.path
-                  ? "text-s3" // Highlight active item
-                  : "hover:text-s3" // Hover style for active items
+        {menuItems.map((item) => (
+          <Link
+            key={item.name}
+            href={item.isDisabled ? "#" : item.path}
+            className={`flex flex-col items-center gap-1 w-1/4 justify-center ${
+              (currentPath === item.path ? "text-s3" : "hover:text-s3",
+              item.isDisabled ? "opacity-30" : "")
+            }`}
+          >
+            {item.icon}
+            <p
+              className={`text-xs ${
+                currentPath === item.path ? "text-p1" : ""
               }`}
             >
-              {item.icon}
-              <span className="text-xs">{item.name}</span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Right Section */}
-        <div className="relative flex justify-end gap-4 min-w-2/5 pr-3 z-50">
-          {rightMobileMenuItems.map((item) => (
-            <Link
-              key={item.name}
-              href={!item.isDisabled ? item.path : "#"} // Disable link if item is disabled
-              className={`flex flex-col items-center gap-1 z-50 ${
-                item.isDisabled
-                  ? "opacity-30 pointer-events-none" // Add styles for disabled items
-                  : currentPath === item.path
-                  ? "text-s3" // Highlight active item
-                  : "hover:text-s3" // Hover style for active items
-              }`}
-            >
-              {item.icon}
-              <span className="text-xs">{item.name}</span>
-            </Link>
-          ))}
-        </div>
+              {item.name}
+            </p>
+          </Link>
+        ))}
       </div>
     </>
   );

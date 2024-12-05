@@ -49,8 +49,6 @@ const page = () => {
 
   return (
     <div className="flex md:max-h-[100vh] pb-12 md:pb-0 md:overflow-hidden">
-      <Humphry />
-
       {/* Sidebar Navigation */}
       <SideBar />
 
