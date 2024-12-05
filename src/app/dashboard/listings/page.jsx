@@ -20,6 +20,10 @@ const page = () => {
   const [recipes, setRecipes] = useState([]); // State to store recipes
   const [loading, setLoading] = useState(true); // State to track loading
 
+  const handleSelect = (item) => {
+    
+    router.push(`/dashboard/listings/details/${item.id}`);
+  };
 
 // Fetch and sort recipes from Firestore
 const loadRecipes = async () => {
@@ -67,7 +71,7 @@ const loadRecipes = async () => {
         <Header username={appState.user?.username} />
 
         {/* Main Content Section */}
-        <MainContent menuItems={recipes} isDarkMode={isDarkMode} onReload={() => loadRecipes()} />
+        <MainContent menuItems={recipes} isDarkMode={isDarkMode} onReload={loadRecipes} handleSelect={handleSelect}/>
       </div>
     </div>
   );

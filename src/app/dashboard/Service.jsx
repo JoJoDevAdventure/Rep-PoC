@@ -365,16 +365,16 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
            audio: "Link to the audio (keep it the same as the input)",
            image: "Link to the image (keep it the same as the input)",
            eng: {
-             title: "Short title in English based on the audio and image content",
-             description: "description in English describing the audio content confirmed by the image, don't start with "audio description of.." put directly what the audio describes.",
+             title: "Short title in English based on the audio and image analysis",
+             description: "description in English describing the audio content confirmed by the image analysis, don't start with "audio description of.." put directly what the audio describes, make it feel natural.",
              marketing_description: "Catchy marketing description in English, describing the ingredients, taste, mid length",
            },
            esp: {
              title: "Short title in Spanish based on the audio and image content",
-             description: "description in Spanish describing the audio content confirmed by the image, don't start with "audio description of.." put directly what the audio describes.",
+             description: "description in Spanish describing the audio analysis confirmed by the image, don't start with "audio description of.." put directly what the audio describes. make it feel natural",
              marketing_description: "Catchy marketing description in Spanish, describing the ingredients, taste, mid length",
            },
-           price: "Price of the product or service as inferred from the content, or suggest a price if not specified"
+           price: "Price of the product or service as inferred from the content, or suggest a price if not specified, field is required"
          }
 
       3. Error Handling:

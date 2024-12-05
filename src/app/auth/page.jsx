@@ -33,7 +33,7 @@ const Auth = () => {
         appState.isAuth = true;
         setLoading(false);
         router.push("/");
-      }, 2000);
+      }, 500);
     } else {
       setLoading(false);
       alert("User not found. Please check your credentials.");

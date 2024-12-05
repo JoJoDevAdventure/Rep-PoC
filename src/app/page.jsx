@@ -18,7 +18,7 @@ const Home = () => {
       } else {
         router.push('/auth'); // Redirect to /auth if not authenticated
       }
-    }, 1500); // 1.5 second delay
+    }, 200); // 1.5 second delay
 
     // Cleanup the timeout when the component is unmounted
     return () => clearTimeout(timer);

@@ -10,7 +10,7 @@ import { processListing } from "../Service"; // Import the services
 
 // Import appState from your state file
 
-const MainContent = ({ menuItems, isDarkMode, onReload }) => {
+const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
   const [currentCall, setCurrentCall] = useState(null); // State to track the currently active call
   const [isPopUpOpen, setIsPopUpOpen] = useState(false); // State to track the pop-up form visibility
   const [loading, setIsLoading] = useState(false); // State to show/hide loading animation
@@ -42,9 +42,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload }) => {
     }
   };
 
-  const handleSelect = (item) => {
-    router.push(`/dashboard/listings/details/${item.id}`);
-  };
+
 
   return (
     <div
