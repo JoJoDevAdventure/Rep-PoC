@@ -21,17 +21,17 @@ const Header = ({ username, onRefresh }) => {
         >
           {appState.isEnglish ? "Good Morning" : "Buenos días"}
         </p>
-        <div className="flex flex-col md:flex-row justify-start md:gap-4">
+        <div className="flex flex-row justify-start gap-2">
           {/* Welcome Message */}
           <h1
-            className={`text-3xl md:text-4xl font-semibold w-full md:w-auto ${
+            className={`text-xl md:text-4xl font-semibold w-full md:w-auto ${
               isDarkMode ? "text-p4" : "text-black" // Dynamic heading color
             }`}
           >
             {appState.isEnglish ? "Welcome back" : "Bienvenido"}
           </h1>
           <span
-            className={`text-3xl md:text-4xl font-light w-auto ${
+            className={`text-xl md:text-4xl font-light w-auto ${
               isDarkMode ? "text-p5" : "text-gray-900" // Lighter color for username
             }`}
           >

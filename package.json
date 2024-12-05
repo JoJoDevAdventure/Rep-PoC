@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.10",
     "@wavesurfer/react": "^1.0.7",
     "axios": "^1.7.8",
     "clsx": "^2.1.1",
+    "elevenlabs": "^0.18.1",
     "firebase": "^11.0.2",
     "framer-motion": "^11.11.17",
     "lottie-react": "^2.4.0",

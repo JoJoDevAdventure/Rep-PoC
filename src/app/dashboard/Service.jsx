@@ -1,7 +1,7 @@
 import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
-import { addDoc, collection, doc, getDoc, getDocs } from "firebase/firestore"; // Firestore functions
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs } from "firebase/firestore"; // Firestore functions
 import { db } from "../../../firebase"; // Firestore instance
 
 const GITHUB_API_URL =
@@ -82,6 +82,62 @@ export const uploadFileToGitHub = async (file, fileName) => {
       {
         message: `Add or update ${fileName}`,
         content: base64Content,
+        ...(existingFileSha ? { sha: existingFileSha } : {}), // Include SHA for updates
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data.content.download_url; // Return the file URL
+  } catch (error) {
+    console.error(`Error uploading ${fileName} to GitHub:`, error);
+    throw error;
+  }
+};
+
+export const uploadFileToGitHubNoConversion = async (file, fileName) => {
+  if (!GITHUB_TOKEN) {
+    console.error("GitHub token is not defined. Check your .env file.");
+    throw new Error("GitHub token is missing.");
+  }
+
+  try {
+    // Construct the API URL for the file
+    const fileUrl = GITHUB_API_URL.replace(":owner", GITHUB_OWNER)
+      .replace(":repo", GITHUB_REPO)
+      .replace(":path", fileName);
+
+    let existingFileSha = null;
+
+    try {
+      // Check if the file already exists
+      const checkResponse = await axios.get(fileUrl, {
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      existingFileSha = checkResponse.data.sha; // Get the SHA for updates
+    } catch (checkError) {
+      if (checkError.response && checkError.response.status === 404) {
+        console.log("File does not exist. Creating a new one.");
+      } else {
+        console.error("Error checking file existence:", checkError);
+        throw checkError;
+      }
+    }
+
+    // Upload or update the file
+    const response = await axios.put(
+      fileUrl,
+      {
+        message: `Add or update ${fileName}`,
+        content: file,
         ...(existingFileSha ? { sha: existingFileSha } : {}), // Include SHA for updates
       },
       {
@@ -222,7 +278,66 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
   }
 };
 
+import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
+
+const client = new ElevenLabsClient({
+  apiKey: process.env.NEXT_PUBLIC_ELEVEN_API_KEY,
+});
+
+/**
+ * Convert text to speech using ElevenLabs
+ * @param {string} modelId - The ElevenLabs model ID to use.
+ * @param {string} text - The text to convert to speech.
+ * @returns {string} - URL of the uploaded audio file.
+ */
+export const TTS = async (modelId, text) => {
+  try {
+    // ElevenLabs API endpoint
+    const TTS_API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${modelId}/stream`;
+
+    // Send POST request to ElevenLabs
+    const response = await axios.post(
+      TTS_API_URL,
+      {
+        text,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.8,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": process.env.NEXT_PUBLIC_ELEVEN_API_KEY, // Replace with your ElevenLabs API key
+        },
+        responseType: "arraybuffer", // Ensure we get binary data
+      }
+    );
+
+    console.log("TTS Response:", response);
+
+    // Convert the response data to a Blob
+    const audioBlob = new Blob([response.data], { type: "audio/mpeg" });
+
+    console.log("Audio Blob:", audioBlob);
+
+    // Generate a unique file name
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `audio_${timestamp}.mp3`;
+
+    // Upload the audio file to GitHub
+    const audioUrl = await uploadFileToGitHub(audioBlob, fileName);
+
+    console.log("Uploaded Audio URL:", audioUrl);
+
+    return audioUrl;
+  } catch (error) {
+    console.error("Error generating TTS:", error.response?.data || error.message);
+    throw new Error("Failed to generate text-to-speech.");
+  }
+};
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, // Set your API key here
@@ -336,10 +451,43 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
       temperature: 0.2,
     });
 
-    // Extract the structured content from the response
-    const output = saveToFirebase(completion.choices[0].message.content);
+    console.log(completion.choices[0].message.content);
 
-    
+    const outputobj = JSON.parse(completion.choices[0].message.content);
+
+    // Validate required fields in the parsed object
+    if (
+      !outputobj.audio ||
+      !outputobj.image ||
+      !outputobj.eng ||
+      !outputobj.esp
+    ) {
+      throw new Error("Invalid data structure: Required fields are missing.");
+    }
+
+    // Generate TTS for marketing descriptions and get links
+    console.log("Generating TTS for English...");
+    const engEnhancedAudio = await TTS(
+      "21m00Tcm4TlvDq8ikWAM",
+      outputobj.eng.marketing_description
+    );
+    console.log("English TTS Link:", engEnhancedAudio);
+
+    console.log("Generating TTS for Spanish...");
+    const espEnhancedAudio = await TTS(
+      "tTQzD8U9VSnJgfwC6HbY",
+      outputobj.esp.marketing_description
+    );
+    console.log("Spanish TTS Link:", espEnhancedAudio);
+
+    // Add the enhanced audio URLs to the output object
+    outputobj.eng.enhanced_audio = engEnhancedAudio;
+    outputobj.esp.enhanced_audio = espEnhancedAudio;
+
+    console.log(outputobj);
+
+    // Extract the structured content from the response
+    const output = saveToFirebase(JSON.stringify(outputobj));
 
     return output; // Already formatted as JSON per schema
   } catch (error) {
@@ -383,7 +531,6 @@ export const transformApiResponse = (response) => {
   return transformedData;
 };
 
-
 /**
  * Saves the JSON output from ChatGPT to a Firebase Firestore collection.
  * @param {string} jsonData - The JSON string output from ChatGPT.
@@ -399,9 +546,21 @@ export const saveToFirebase = async (jsonData) => {
     const dataObject = JSON.parse(jsonData);
 
     // Validate required fields in the parsed object
-    if (!dataObject.audio || !dataObject.image || !dataObject.eng || !dataObject.esp) {
+    if (
+      !dataObject.audio ||
+      !dataObject.image ||
+      !dataObject.eng ||
+      !dataObject.esp
+    ) {
       throw new Error("Invalid data structure: Required fields are missing.");
     }
+
+    if (appState.user) {
+      dataObject.Location = appState.user.Location
+      dataObject.Persona = appState.user.Persona
+    }
+
+    dataObject.timestamp = new Date().toISOString();
 
     // Add the parsed object to the Firestore collection
     const docRef = await addDoc(collection(db, "menu_items"), dataObject);
@@ -470,6 +629,64 @@ export const fetchRecipeById = async (id) => {
     }
   } catch (error) {
     console.error(`Error fetching recipe with ID ${id} from Firestore:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a document by ID from Firestore.
+ * @param {string} id - The ID of the document to delete.
+ * @returns {void} - Logs success or throws an error.
+ */
+export const deleteRecipeById = async (id) => {
+  try {
+    // Reference to the document in the "menu_items" collection
+    const docRef = doc(db, "menu_items", id);
+
+    // Delete the document
+    await deleteDoc(docRef);
+
+    console.log(`Document with ID: ${id} successfully deleted.`);
+  } catch (error) {
+    console.error(`Error deleting recipe with ID ${id} from Firestore:`, error);
+    throw error;
+  }
+};
+
+import { updateDoc } from "firebase/firestore";
+
+/**
+ * Update a recipe/document by ID in Firestore.
+ * @param {string} id - The ID of the document to update.
+ * @param {Object} updates - The fields to update (title, description, price).
+ * @returns {void} - Logs success or throws an error.
+ */
+export const updateRecipeById = async (id, updates) => {
+  try {
+    // Reference to the document in the "menu_items" collection
+    const docRef = doc(db, "menu_items", id);
+
+    // Determine the language based on appState
+    const isEnglish = appState.isEnglish;
+
+    // Prepare the update object
+    const updateObject = {};
+    if (updates.title) {
+      updateObject[`${isEnglish ? "eng" : "esp"}.title`] = updates.title;
+    }
+    if (updates.description) {
+      updateObject[`${isEnglish ? "eng" : "esp"}.description`] = updates.description;
+    }
+    if (updates.price) {
+      updateObject["price"] = updates.price; // Price is typically not language-specific
+    }
+
+    // Update the document in Firestore
+    await updateDoc(docRef, updateObject);
+
+    console.log(`Document with ID: ${id} successfully updated.`);
+  } catch (error) {
+    console.error(`Error updating recipe with ID ${id} in Firestore:`, error);
     throw error;
   }
 };

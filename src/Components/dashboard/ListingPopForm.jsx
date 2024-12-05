@@ -106,22 +106,39 @@ const handleSave = () => {
     }
   };
 
-  // Start audio recording
+  const generateFileName = (prefix, extension) => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    return `${prefix}_${timestamp}.${extension}`;
+  };
+
+  // Start recording
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorderRef.current = new MediaRecorder(stream);
     const chunks = [];
-
+  
     mediaRecorderRef.current.ondataavailable = (e) => {
       chunks.push(e.data);
     };
-
+  
     mediaRecorderRef.current.onstop = () => {
       const blob = new Blob(chunks, { type: "audio/webm" });
-      setAudioBlob(blob);
+  
+      // Validate the MIME type
+      if (!blob.type.startsWith("audio/")) {
+        console.error("Invalid audio format.");
+        alert("Error: The recorded file is not a valid audio format.");
+        return;
+      }
+  
+      // Assign a valid filename
+      const fileName = generateFileName("audio", "webm");
+      const file = new File([blob], fileName, { type: blob.type });
+  
+      setAudioBlob(file); // Save the file as audioBlob
       loadWaveform(blob); // Load waveform for recorded audio
     };
-
+  
     mediaRecorderRef.current.start();
     setIsRecording(true); // Show recording icon
   };

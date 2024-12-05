@@ -3,10 +3,6 @@
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 
-const Humphry = dynamic(() => import("@/Components/Humphry"), { ssr: false });
-const Header = dynamic(() => import("@/Components/dashboard/Header"), {
-  ssr: false,
-});
 const SideBar = dynamic(() => import("@/Components/dashboard/SideBar"), {
   ssr: false,
 });

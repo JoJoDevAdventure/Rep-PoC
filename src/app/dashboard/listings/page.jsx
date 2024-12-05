@@ -20,25 +20,34 @@ const page = () => {
   const [recipes, setRecipes] = useState([]); // State to store recipes
   const [loading, setLoading] = useState(true); // State to track loading
 
+
+// Fetch and sort recipes from Firestore
+const loadRecipes = async () => {
+  try {
+    const fetchedRecipes = await fetchRecipes();
+
+    // Sort recipes by timestamp in descending order (newest first)
+    const sortedRecipes = fetchedRecipes.sort((a, b) => {
+      const timestampA = new Date(a.timestamp); // Adjust 'timestamp' to your actual field name
+      const timestampB = new Date(b.timestamp);
+      return timestampB - timestampA; // Newest first
+    });
+
+    setRecipes(sortedRecipes); // Update state with sorted recipes
+    console.log("Sorted Recipes:", sortedRecipes);
+  } catch (error) {
+    console.error("Failed to fetch recipes:", error);
+  } finally {
+    setLoading(false); // Stop loading spinner
+  }
+};
+
   useEffect(() => {
     // Redirect user to the home page if no username is found in the app state
     if (appState.user == null) {
       router.push("/"); // Redirects to the root ("/") if not logged in
       return;
     }
-
-    // Fetch recipes from Firestore
-    const loadRecipes = async () => {
-      try {
-        const fetchedRecipes = await fetchRecipes();
-        setRecipes(fetchedRecipes); // Update state with fetched recipes
-        console.log(fetchedRecipes)
-      } catch (error) {
-        console.error("Failed to fetch recipes:", error);
-      } finally {
-        setLoading(false); // Stop loading spinner
-      }
-    };
 
     loadRecipes(); // Call the fetch function
   }, [router]); // Dependency ensures this runs whenever `router` changes
@@ -58,7 +67,7 @@ const page = () => {
         <Header username={appState.user?.username} />
 
         {/* Main Content Section */}
-        <MainContent menuItems={recipes} isDarkMode={isDarkMode} />
+        <MainContent menuItems={recipes} isDarkMode={isDarkMode} onReload={() => loadRecipes()} />
       </div>
     </div>
   );

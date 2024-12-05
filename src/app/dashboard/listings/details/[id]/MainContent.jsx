@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchRecipeById } from "@/app/dashboard/Service";
+import { deleteRecipeById, fetchRecipeById, updateRecipeById } from "@/app/dashboard/Service";
 import { appState } from "@/appState"; // Access appState for language preference
 import { useRouter } from "next/navigation"; // Use Next.js router for navigation
 import { useEffect, useState } from "react";
@@ -28,6 +28,62 @@ const MainContent = ({ id }) => {
 
     if (id) fetchData();
   }, [id]);
+
+  const handleDelete = async () => {
+    try {
+      if (
+        window.confirm(
+          isEnglish
+            ? "Are you sure you want to delete this item?"
+            : "¿Estás seguro de que quieres eliminar este artículo?"
+        )
+      ) {
+        await deleteRecipeById(id); // Call delete function
+        console.log("Item successfully deleted.");
+        router.push("/dashboard/listings"); // Redirect to listings page
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      alert(
+        isEnglish
+          ? "Failed to delete the item."
+          : "No se pudo eliminar el artículo."
+      );
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const price = document.getElementById("price").value.trim();
+
+      if (!title || !description || !price) {
+        alert(
+          isEnglish
+            ? "All fields (title, description, and price) are required."
+            : "Todos los campos (título, descripción y precio) son obligatorios."
+        );
+        return;
+      }
+
+      // Update the recipe in Firebase
+      await updateRecipeById(id, { title, description, price });
+      console.log("Item successfully updated.");
+      alert(
+        isEnglish
+          ? "Item successfully updated."
+          : "Artículo actualizado con éxito."
+      );
+    } catch (error) {
+      console.error("Error updating item:", error);
+      alert(
+        isEnglish
+          ? "Failed to update the item."
+          : "No se pudo actualizar el artículo."
+      );
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
 
@@ -63,15 +119,13 @@ const MainContent = ({ id }) => {
         <div className="relative w-full max-w-2xl pt-8">
           <div className="bg-white rounded-lg shadow p-4">
             <h2 className="text-l font-semibold text-gray-700 text-center">
-              {isEnglish
-                ? "Marketing Audio"
-                : "Audio de marketing"}
+              {isEnglish ? "Marketing Audio" : "Audio de marketing"}
             </h2>
             <ReactAudioPlayer
-              src={item.audio}
+              src={content.enhanced_audio}
               autoPlay
               controls
-              className="w-full mt-4 "
+              className="w-full mt-4"
             />
           </div>
         </div>
@@ -116,7 +170,7 @@ const MainContent = ({ id }) => {
             <input
               id="price"
               type="text"
-              defaultValue={item?.price}
+              defaultValue={item.price || content.price}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
@@ -124,10 +178,16 @@ const MainContent = ({ id }) => {
 
         {/* Action Buttons */}
         <div className="w-full max-w-2xl mt-6 flex justify-between">
-          <button className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition">
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition"
+          >
             {isEnglish ? "Delete" : "Eliminar"}
           </button>
-          <button className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition">
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition"
+          >
             {isEnglish ? "Save" : "Guardar"}
           </button>
         </div>
