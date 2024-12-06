@@ -5,16 +5,22 @@ const ImagePicker = ({ onClose, onCapture }) => {
   const videoRef = useRef(null); // Ref for the video element
   const [isCameraActive, setIsCameraActive] = useState(false); // State to track camera activation
   const [imagePreview, setImagePreview] = useState(null); // State to store captured image
+  const [videoDevices, setVideoDevices] = useState([]); // State to store available video devices
+  const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0); // Index of the active camera
 
   const isEnglish = appState.isEnglish; // Get language preference
 
-  // Start the camera
+  // Start the camera with the selected device
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream; // Set video source to the camera stream
-        setIsCameraActive(true);
+      if (videoDevices.length > 0) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream; // Set video source to the camera stream
+          setIsCameraActive(true);
+        }
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -52,15 +58,42 @@ const ImagePicker = ({ onClose, onCapture }) => {
     startCamera(); // Restart the camera
   };
 
+  // Switch to the next camera
+  const switchCamera = () => {
+    stopCamera(); // Stop the current camera
+    const nextIndex = (currentDeviceIndex + 1) % videoDevices.length;
+    setCurrentDeviceIndex(nextIndex); // Set the next camera as active
+  };
+
   // Handle closing the picker
   const handleClose = () => {
     stopCamera();
     onClose();
   };
 
+  // Get the list of video devices on component mount
+  useEffect(() => {
+    const getVideoDevices = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputDevices = devices.filter(
+          (device) => device.kind === "videoinput"
+        );
+        setVideoDevices(videoInputDevices);
+        setCurrentDeviceIndex(0); // Start with the first device
+      } catch (error) {
+        console.error("Error fetching video devices:", error);
+      }
+    };
+
+    getVideoDevices();
+  }, []);
+
+  // Start the camera when the component is mounted or the device changes
   useEffect(() => {
     startCamera();
-  }, []);
+    return () => stopCamera(); // Clean up when the component is unmounted
+  }, [currentDeviceIndex, videoDevices]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex flex-col items-center justify-center">
@@ -81,6 +114,16 @@ const ImagePicker = ({ onClose, onCapture }) => {
           >
             {isEnglish ? "Cancel" : "Cancelar"}
           </button>
+
+          {/* Switch Camera Button */}
+          {videoDevices.length > 1 && (
+            <button
+              onClick={switchCamera}
+              className="absolute top-4 right-4 border-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-blue-600"
+            >
+              {isEnglish ? "Switch Camera" : "Cambiar Cámara"}
+            </button>
+          )}
 
           {/* Capture Button */}
           <div
@@ -110,7 +153,15 @@ const ImagePicker = ({ onClose, onCapture }) => {
             onClick={retakeImage}
             className="absolute bottom-8 w-20 h-20 bg-white text-white rounded-full cursor-pointer flex items-center justify-center shadow-lg hover:bg-yellow-600"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" height="42px" viewBox="0 -960 960 960" width="42px" fill="#000000"><path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="42px"
+              viewBox="0 -960 960 960"
+              width="42px"
+              fill="#000000"
+            >
+              <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z" />
+            </svg>
           </button>
         </>
       )}
