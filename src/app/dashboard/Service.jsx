@@ -354,7 +354,7 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
   try {
     // Define the OpenAI prompt
     const prompt = `
-      You are an intelligent assistant tasked with analyzing audio and image files from given URLs and generating a structured JSON response. Here are the requirements:
+      You are an intelligent assistant tasked with analyzing audio and image files from given URLs and generating a structured JSON response. DO NOT RESPOND WITH A RANDOM DESCRIPTION, DESCRIBE THE IMAGE Here are the requirements:
 
       1. Input: You will receive a JSON object containing two fields:
          - audio: A URL linking to an audio file.

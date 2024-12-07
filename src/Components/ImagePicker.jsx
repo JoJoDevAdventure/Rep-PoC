@@ -17,6 +17,8 @@ const ImagePicker = ({ onClose, onCapture }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
         });
+
+        console.log(videoDevices.length)
         if (videoRef.current) {
           videoRef.current.srcObject = stream; // Set video source to the camera stream
           setIsCameraActive(true);
