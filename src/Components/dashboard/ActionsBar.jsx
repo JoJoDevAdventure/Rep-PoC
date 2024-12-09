@@ -62,35 +62,6 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
 
           {/* Action Buttons */}
           <div className="flex gap-4 md:w-auto justify-center w-2/3 pl-4">
-            {/* Edit Listings Icon */}
-            <button
-              onClick={() => console.log(editListingsLabel)}
-              className={`p-2 rounded-full ${
-                isDarkMode ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              title={editListingsLabel}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className={`w-6 h-6 ${textColor}`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16.862 3.487a3.375 3.375 0 114.775 4.775l-10.69 10.69a1.5 1.5 0 01-.53.354l-4.724 1.575 1.575-4.724a1.5 1.5 0 01.354-.53l10.69-10.69z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.695 6.317a3.375 3.375 0 01-4.775-4.775M16.5 4.5L19.5 7.5"
-                />
-              </svg>
-            </button>
-
             {/* Add Listing Button */}
             <button
               onClick={onAddListing}

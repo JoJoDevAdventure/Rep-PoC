@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@11labs/client": "^0.0.4",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@wavesurfer/react": "^1.0.7",
     "axios": "^1.7.8",

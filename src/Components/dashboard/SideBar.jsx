@@ -54,8 +54,8 @@ const SideBar = () => {
       ),
     },
     {
-      name: isEnglish ? "Inbox" : "Chats",
-      path: "/crm",
+      name: isEnglish ? "Orders" : "Pedidos",
+      path: "/dashboard/orders",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -63,7 +63,7 @@ const SideBar = () => {
           viewBox="0 -960 960 960"
           width="24px"
           fill={`${
-            currentPath == "/dashboard/inbox"
+            currentPath == "/dashboard/orders"
               ? "#fb7038"
               : isDarkMode
               ? "#ffffff"
@@ -73,7 +73,6 @@ const SideBar = () => {
           <path d="M200-160q-33 0-56.5-23.5T120-240v-480q0-33 23.5-56.5T200-800h560q33 0 56.5 23.5T840-720v480q0 33-23.5 56.5T760-160H200Zm0-80h560v-170H620q-11 33-37.5 52T520-340H440q-34 0-60.5-19T342-411H200v171Zm0-251h148q15 24 40.5 39t54.5 15h80q30 0 55.5-15t39.5-39h148v-229H200v229Zm0-229v229-229Zm560 480v-170H760v170ZM200-720v170h142q-6-10-10-23t-4-27q0-32 22-54.5t54-22.5h80q32 0 54 22.5t22 54.5q0 14-4 27t-10 23h142v-170H200Zm560 170v-170 170Z" />
         </svg>
       ),
-      isDisabled: true,
     },
     {
       name: isEnglish ? "My Account" : "Mi cuenta",
@@ -102,7 +101,7 @@ const SideBar = () => {
     <>
       {/* Bottom Navigation */}
       <div
-        className={`fixed bottom-0 left-0 w-full flex justify-around items-center py-3 z-50 ${
+        className={`fixed bottom-0 left-0 w-full flex justify-around items-center py-3 z-40 ${
           isDarkMode ? "bg-s1 text-white" : "bg-gray-50 text-black"
         }`}
       >

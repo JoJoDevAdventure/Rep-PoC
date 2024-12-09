@@ -27,7 +27,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
     setIsLoading(true)
     setIsPopUpOpen(false)
 
-    console.log("uploaded image :",uploadedFile,"uploaded audio :", audioBlob)
+    console.log("uploaded image : ", uploadedFile, "uploaded audio : ", audioBlob)
 
     try {
       const response = await processListing({ uploadedFile, audioBlob });

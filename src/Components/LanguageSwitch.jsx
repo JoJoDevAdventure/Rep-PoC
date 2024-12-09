@@ -41,7 +41,7 @@ const LanguageSwitch = () => {
 
       {/* Language Options */}
       {isOpen && (
-        <div className="bg-white flex gap-4">
+        <div className="bg-transparent flex gap-4">
           <button
             onClick={() => handleLanguageChange("english")}
             className={`w-10 h-10 rounded-full border-2 ${

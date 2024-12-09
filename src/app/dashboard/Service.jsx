@@ -354,142 +354,106 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
   try {
     // Define the OpenAI prompt
     const prompt = `
-      You are an intelligent assistant tasked with analyzing audio and image files from given URLs and generating a structured JSON response. DO NOT RESPOND WITH A RANDOM DESCRIPTION, DESCRIBE THE IMAGE Here are the requirements:
+      You are an AI assistant tasked with analyzing an image input (Most likely food). Your output should be a structured JSON object based solely on the visible content of the image.
 
-      1. Input: You will receive a JSON object containing two fields:
-         - audio: A URL linking to an audio file.
-         - image: A URL linking to an image file.
+      ### Instructions:
+      1. **Image Analysis**: 
+         - Describe exactly what is visible in the image.
+         - Avoid assumptions unless clearly inferable from the content.
+         - Focus on factual observations: Food ,objects, colors, patterns, or text.
 
-      2. Output: Provide a JSON object in the following format:
+      2. **Output JSON Format**:
+         - Retain the same input URLs for audio and image.
+         - Provide both English and Spanish descriptions as follows:
          {
-           audio: "Link to the audio (keep it the same as the input)",
-           image: "Link to the image (keep it the same as the input)",
-           eng: {
-             title: "Short title in English based on the audio and image analysis",
-             description: "description in English describing the audio content confirmed by the image analysis, don't start with "audio description of.." put directly what the audio describes, make it feel natural.",
-             marketing_description: "Catchy marketing description in English, describing the ingredients, taste, mid length",
+           "audio": "Link to the audio (same as input)",
+           "image": "Link to the image (same as input)",
+           "eng": {
+             "title": "Short, precise title in English",
+             "description": "3 lines description in English of what's visible in the image.",
+             "marketing_description": "Catchy marketing description in English based on the image content."
            },
-           esp: {
-             title: "Short title in Spanish based on the audio and image content",
-             description: "description in Spanish describing the audio analysis confirmed by the image, don't start with "audio description of.." put directly what the audio describes. make it feel natural",
-             marketing_description: "Catchy marketing description in Spanish, describing the ingredients, taste, mid length",
+           "esp": {
+             "title": "Short, precise title in Spanish",
+             "description": "3 lines description in Spanish of what's visible in the image.",
+             "marketing_description": "Catchy marketing description in Spanish based on the image content."
            },
-           price: "Price of the product or service as inferred from the content, or suggest a price if not specified, field is required"
+           "price": "Suggested price based on the image content or product context (mandatory)."
          }
 
-      3. Error Handling:
-         - If there is an issue processing the input (e.g., invalid URL, missing content, or any other issue), return the following JSON format:
+      3. **Error Handling**:
+         - If the URLs are invalid or content cannot be analyzed, return:
            {
-             error: "Description of the error"
+             "error": "Description of the issue."
            }
+
+      4. **Additional Notes**:
+         - Avoid starting descriptions with "This is a..." or "The image describes / shows...".
+         - Marketing descriptions should be engaging but relevant to the image.
+         - Avoid starting titles with "delicious" or general cliché words.
+
+
+      ### Input JSON:
+      {
+        "audio": "${audioUrl}",
+        "image": "${imageUrl}"
+      }
     `;
 
-    const userInput = `
-        audio: ${audioUrl}
-        /n
-        image: ${imageUrl}
-      `;
-
-    console.log(userInput);
+    console.log("User Input:", { audio: audioUrl, image: imageUrl });
 
     // Call the OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
           content: prompt,
         },
-        {
-          role: "user",
-          content: userInput,
-        },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "media_analysis_schema",
-          schema: {
-            type: "object",
-            properties: {
-              audio: {
-                description: "The input audio link",
-                type: "string",
-              },
-              image: {
-                description: "The input image link",
-                type: "string",
-              },
-              eng: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  description: { type: "string" },
-                  marketing_description: { type: "string" },
-                },
-                required: ["title", "description", "marketing_description"],
-              },
-              esp: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  description: { type: "string" },
-                  marketing_description: { type: "string" },
-                },
-                required: ["title", "description", "marketing_description"],
-              },
-              price: {
-                description: "The inferred price or 'Not specified'",
-                type: "string",
-              },
-            },
-            required: ["audio", "image", "eng", "esp", "price"],
-            additionalProperties: false,
-          },
-        },
-      },
       temperature: 0.2,
     });
 
-    console.log(completion.choices[0].message.content);
+    const responseContent = completion.choices[0]?.message?.content;
 
-    const outputobj = JSON.parse(completion.choices[0].message.content);
+    // Parse the response
+    const outputObj = JSON.parse(responseContent);
 
     // Validate required fields in the parsed object
     if (
-      !outputobj.audio ||
-      !outputobj.image ||
-      !outputobj.eng ||
-      !outputobj.esp
+      !outputObj.audio ||
+      !outputObj.image ||
+      !outputObj.eng ||
+      !outputObj.esp
     ) {
       throw new Error("Invalid data structure: Required fields are missing.");
     }
+
+    console.log("Structured Output:", outputObj);
 
     // Generate TTS for marketing descriptions and get links
     console.log("Generating TTS for English...");
     const engEnhancedAudio = await TTS(
       "21m00Tcm4TlvDq8ikWAM",
-      outputobj.eng.marketing_description
+      outputObj.eng.marketing_description
     );
-    console.log("English TTS Link:", engEnhancedAudio);
 
     console.log("Generating TTS for Spanish...");
     const espEnhancedAudio = await TTS(
       "tTQzD8U9VSnJgfwC6HbY",
-      outputobj.esp.marketing_description
+      outputObj.esp.marketing_description
     );
-    console.log("Spanish TTS Link:", espEnhancedAudio);
 
-    // Add the enhanced audio URLs to the output object
-    outputobj.eng.enhanced_audio = engEnhancedAudio;
-    outputobj.esp.enhanced_audio = espEnhancedAudio;
+    // Add enhanced audio links to the output object
+    outputObj.eng.enhanced_audio = engEnhancedAudio;
+    outputObj.esp.enhanced_audio = espEnhancedAudio;
 
-    console.log(outputobj);
+    console.log("Final Output with Enhanced Audio:", outputObj);
 
-    // Extract the structured content from the response
-    const output = saveToFirebase(JSON.stringify(outputobj));
+    // Save to Firebase or another storage
+    const output = saveToFirebase(JSON.stringify(outputObj));
 
-    return output; // Already formatted as JSON per schema
+    return output; // Return the structured JSON
   } catch (error) {
     console.error("Error analyzing media:", error.message);
     return {

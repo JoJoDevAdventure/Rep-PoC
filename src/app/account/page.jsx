@@ -11,11 +11,8 @@ const Account = () => {
   const router = useRouter(); // Next.js router for navigation
 
   useEffect(() => {
-    // Redirect user to the home page if no username is found in the app state
-    if (!appState.username) {
-      router.push("/"); // Redirects to the root ("/") if not logged in
-    }
-  }, [router]); // Dependency ensures this runs whenever `router` changes
+
+  })
 
   return (
     <div className="flex max-h-[100vh] overflow-hidden">

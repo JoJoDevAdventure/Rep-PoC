@@ -1,46 +1,44 @@
 "use client";
 
 import { useTheme } from "@/app/context/themeContext";
+import { appState } from "@/appState"; // Import appState for language preference
 import { useState } from "react";
 
 const MainContent = () => {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = useState(0); // Track the active section/tab
+  const isEnglish = appState.isEnglish; // Get language preference
 
-  const sections = [
-    "Profile",
-    "Security",
-    "Notifications",
-    "Preferences",
-    "Billing",
-  ];
+  const sections = isEnglish
+    ? ["Profile", "Security", "Notifications", "Preferences", "Billing"]
+    : ["Perfil", "Seguridad", "Notificaciones", "Preferencias", "Facturación"];
 
   const renderContent = () => {
     switch (activeTab) {
       case 0:
-        return <div>Profile Settings Content</div>;
+        return <div>{isEnglish ? "Profile Settings Content" : "Contenido de la configuración del perfil"}</div>;
       case 1:
-        return <div>Security Settings Content</div>;
+        return <div>{isEnglish ? "Security Settings Content" : "Contenido de la configuración de seguridad"}</div>;
       case 2:
-        return <div>Notification Settings Content</div>;
+        return <div>{isEnglish ? "Notification Settings Content" : "Contenido de la configuración de notificaciones"}</div>;
       case 3:
-        return <div>Preferences Settings Content</div>;
+        return <div>{isEnglish ? "Preferences Settings Content" : "Contenido de la configuración de preferencias"}</div>;
       case 4:
-        return <div>Billing Information Content</div>;
+        return <div>{isEnglish ? "Billing Information Content" : "Contenido de la información de facturación"}</div>;
       default:
-        return <div>Select a section to view its content</div>;
+        return <div>{isEnglish ? "Select a section to view its content" : "Seleccione una sección para ver su contenido"}</div>;
     }
   };
 
   return (
     <div
-      className={`flex flex-col md:flex-row h-full w-full overflow-hidden ${
+      className={`flex flex-col md:flex-row h-full w-screen overflow-x-scroll ${
         isDarkMode ? "bg-s1 text-white" : "bg-white text-black"
       }`}
     >
       {/* Left Sidebar with Tabs */}
-      <div  
-        className={`md:w-1/4 w-full border-b md:border-b-0 md:border-r p-4 overflow-x-scroll ${
+      <div
+        className={`md:w-1/4 w-full border-b md:border-b-0 md:border-r p-4 ${
           isDarkMode ? "border-p1/10" : "border-p1/30"
         }`}
       >
