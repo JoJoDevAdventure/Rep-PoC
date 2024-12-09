@@ -82,6 +82,14 @@ const Humphry = () => {
           console.log("Connected to the conversation.");
         },
 
+        onDisconnect: () => {
+          console.log("Disconnected");
+        },
+
+        onDebug: (props) => {
+          console.log(props);
+        },
+
         onMessage: (props) => {
           // Log the incoming message
           console.log("Received Message:");
@@ -89,6 +97,9 @@ const Humphry = () => {
           console.log("Message:", props.message);
           setAgentOutput(props.message);
         },
+
+        onModeChange: (prop) => {},
+      onStatusChange: (prop) => {},
 
         onError: (message, context) => {
           // Log any errors
