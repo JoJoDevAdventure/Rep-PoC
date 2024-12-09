@@ -41,7 +41,7 @@ const Humphry = () => {
       setIsListening(true);
 
       const menuPrompt = recipesRef.current
-        .map((item) => `${item.esp.title}: $${item.price || item.esp.price}`)
+        .map((item) => `${item.esp.title}: $${item.price || item.eng.price}`)
         .join(", ");
 
       const prompts = {
