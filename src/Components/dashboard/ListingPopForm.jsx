@@ -433,7 +433,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                 ? "hover:bg-p2 bg-p1"
                 : "bg-gray-600 hover:bg-gray-300"
             }`}
-            disabled={!audioBlob && !uploadedFile}
+            disabled={!audioBlob}
           >
             {labels.save}
           </button>

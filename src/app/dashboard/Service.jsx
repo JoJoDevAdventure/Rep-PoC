@@ -496,7 +496,7 @@ Input JSON:
       !outputObj.audio ||
       !outputObj.image ||
       !outputObj.eng ||
-      !outputObj.esp
+      !outputObj.esp 
     ) {
       throw new Error("Invalid data structure: Required fields are missing.");
     }
