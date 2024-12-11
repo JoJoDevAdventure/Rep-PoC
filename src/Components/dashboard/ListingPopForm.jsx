@@ -64,7 +64,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
       "uploaded audio :",
       audioBlob
     );
-    // onSave({ uploadedFile, audioBlob });
+    onSave({ uploadedFile, audioBlob });
   };
 
   // Handle removing image
@@ -224,7 +224,10 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     fetch(image)
       .then((res) => res.blob())
       .then((blob) => {
-        setUploadedFile(blob); // Set the Blob as the uploaded file
+        // Create a File object from the blob
+        const fileName = generateFileName("image", "png");
+        const file = new File([blob], fileName, { type: blob.type });
+        setUploadedFile(file); // Set the Blob as the uploaded file
       })
       .catch((error) => {
         console.error("Error converting image to blob:", error);
@@ -310,28 +313,28 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                 </svg>
                 {labels.takePicture}
               </div>
-                <div className="w-full flex flex-col justify-center items-center">
-                  <p className="text-[12px]">{labels.orLabel}</p>
-                  <label className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 w-full text-[12px]">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      height="24px"
-                      viewBox="0 -960 960 960"
-                      width="24px"
-                      fill="#ff5f1f"
-                      className="w-4 h-4"
-                    >
-                      <path d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
-                    </svg>
-                    {labels.browseImages}
-                  </label>
-                </div>
+              <div className="w-full flex flex-col justify-center items-center">
+                <p className="text-[12px]">{labels.orLabel}</p>
+                <label className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 w-full text-[12px]">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="24px"
+                    viewBox="0 -960 960 960"
+                    width="24px"
+                    fill="#ff5f1f"
+                    className="w-4 h-4"
+                  >
+                    <path d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
+                  </svg>
+                  {labels.browseImages}
+                </label>
+              </div>
             </>
           )}
         </div>

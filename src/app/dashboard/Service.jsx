@@ -1,7 +1,14 @@
 import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs } from "firebase/firestore"; // Firestore functions
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+} from "firebase/firestore"; // Firestore functions
 import { db } from "../../../firebase"; // Firestore instance
 
 const GITHUB_API_URL =
@@ -267,7 +274,7 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     console.log("Processing...");
     // const response = await saveListing({ imageLink, audioLink });
 
-    const response = await analyzeMedia(audioLink, imageLink);
+    const response = await analyzeMedia(audioLink, imageLink, audioBlob);
 
     console.log("Listing saved successfully:", response);
 
@@ -334,7 +341,10 @@ export const TTS = async (modelId, text) => {
 
     return audioUrl;
   } catch (error) {
-    console.error("Error generating TTS:", error.response?.data || error.message);
+    console.error(
+      "Error generating TTS:",
+      error.response?.data || error.message
+    );
     throw new Error("Failed to generate text-to-speech.");
   }
 };
@@ -345,62 +355,117 @@ const openai = new OpenAI({
 });
 
 /**
+ * Transcribe audio using OpenAI Whisper API
+ * @param {string} audioUrl - The URL of the audio file
+ * @returns {Promise<string>} - Transcription of the audio
+ */
+export const transcribeAudio = async (audioBlob) => {
+  try {
+    // Step 1: Prepare FormData
+    const formData = new FormData();
+    const fileName = "audio.mp3"; // Ensure correct extension
+    const processedFile = new File([audioBlob], fileName, {
+      type: "audio/mpeg",
+    });
+    formData.append("file", processedFile);
+    formData.append("model", "whisper-1");
+
+    // Step 2: Debug FormData Contents
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    // Step 3: Send POST Request to OpenAI Whisper API
+    const response = await axios.post(
+      "https://api.openai.com/v1/audio/transcriptions",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`, // Replace with your API key
+        },
+      }
+    );
+
+    console.log("Transcription Response:", response.data);
+
+    return response.data.text;
+  } catch (error) {
+    console.error(
+      "Error transcribing audio:",
+      error.response?.data || error.message
+    );
+    throw new Error(
+      "Failed to transcribe audio. Please check the input URL or file format."
+    );
+  }
+};
+
+/**
  * Process audio and image using OpenAI API
  * @param {string} audioUrl - The URL of the audio file
  * @param {string} imageUrl - The URL of the image file
  * @returns {Promise<object>} - Transformed data or error response
  */
-export const analyzeMedia = async (audioUrl, imageUrl) => {
+export const analyzeMedia = async (audioUrl, imageUrl, audioBlob) => {
   try {
+    const audio_transcription = await transcribeAudio(audioBlob); // Path to your audio file
+
     // Define the OpenAI prompt
     const prompt = `
-      You are an AI assistant tasked with analyzing an image input (Most likely food). Your output should be a structured JSON object based solely on the visible content of the image.
+You are an AI assistant tasked with analyzing an image input and audio transcription. Your output should be a structured JSON object based solely on the visible content of the image and information from the transcription.
 
-      ### Instructions:
-      1. **Image Analysis**: 
-         - Describe exactly what is visible in the image.
-         - Avoid assumptions unless clearly inferable from the content.
-         - Focus on factual observations: Food ,objects, colors, patterns, or text.
+Instructions:
+1. **Image Analysis**: 
+   - Describe exactly what is visible in the image.
+   - Avoid assumptions unless clearly inferable from the content.
+   - Focus on factual observations: food, objects, colors, patterns, or text.
 
-      2. **Output JSON Format**:
-         - Retain the same input URLs for audio and image.
-         - Provide both English and Spanish descriptions as follows:
-         {
-           "audio": "Link to the audio (same as input)",
-           "image": "Link to the image (same as input)",
-           "eng": {
-             "title": "Short, 2-3 words precise title in English",
-             "description": "3 lines description in English of what's visible in the image.",
-             "marketing_description": "Catchy marketing description in English based on the image content."
-           },
-           "esp": {
-             "title": "Short, 2-3 words precise title in Spanish",
-             "description": "3 lines description in Spanish of what's visible in the image.",
-             "marketing_description": "Catchy marketing description in Spanish based on the image content."
-           },
-           "price": "get the price from analyzing the audio file, if not, just suggest a convinient price"
-         }
+2. Output JSON Format:
+   - Retain the same input URLs for audio and image.
+   - Respond only with a json, starting with '{' and ending with '}'
+   - Provide both English and Spanish descriptions as follows:
+   
+   {
+     "audio": "Link to the audio (same as input)",
+     "image": "Link to the image (same as input)",
+     "audio_transcription": "(same as input)",
+     "eng": {
+       "title": "Short, 2-3 words precise title in English",
+       "description": "3 lines description in English of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description.",
+       "marketing_description": "Catchy marketing description in English based on the image content."
+     },
+     "esp": {
+       "title": "Short, 2-3 words precise title in Spanish",
+       "description": "3 lines description in Spanish of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description.",
+       "marketing_description": "Catchy marketing description in Spanish based on the image content."
+     },
+     "price": "Get the price from analyzing the audio transcription if mentioned; otherwise, suggest a convenient price."
+   }
 
-      3. **Error Handling**:
-         - If the URLs are invalid or content cannot be analyzed, return:
-           {
-             "error": "Description of the issue."
-           }
+3. **Error Handling**:
+   - If the URLs are invalid or content cannot be analyzed, return:
+     {
+       "error": "Description of the issue."
+     }
 
-      4. **Additional Notes**:
-         - Avoid starting descriptions with "This is a..." or "The image describes / shows...".
-         - Marketing descriptions should be engaging but relevant to the image.
-         - Avoid starting titles with "delicious" or general cliché words.
+4. **Additional Notes**:
+   - Avoid starting descriptions with "This is a..." or "The image describes/shows...".
+   - Marketing descriptions should be engaging but relevant to the image.
+   - Avoid starting titles with "delicious" or other generic words.
 
-
-      ### Input JSON:
-      {
-        "audio": "${audioUrl}",
-        "image": "${imageUrl}"
-      }
-    `;
-
-    console.log("User Input:", { audio: audioUrl, image: imageUrl });
+Input JSON:
+{
+  "audio_transcription": "${audio_transcription}",
+  "image": "${imageUrl}",
+  "audio": "${audioUrl}"
+}
+`;
+    console.log("User Input:", {
+      audio: audioUrl,
+      image: imageUrl,
+      audio_transcription,
+    });
 
     // Call the OpenAI API
     const completion = await openai.chat.completions.create({
@@ -416,8 +481,15 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
 
     const responseContent = completion.choices[0]?.message?.content;
 
-    // Parse the response
-    const outputObj = JSON.parse(responseContent);
+    console.log("Raw API Response:", responseContent);
+
+    // Remove Markdown formatting (e.g., ```json and ```)
+    const cleanedResponse = responseContent.replace(/```json|```/g, "").trim();
+
+    console.log("Cleaned Response:", cleanedResponse);
+
+    // Parse the cleaned response as JSON
+    const outputObj = JSON.parse(cleanedResponse);
 
     // Validate required fields in the parsed object
     if (
@@ -520,8 +592,8 @@ export const saveToFirebase = async (jsonData) => {
     }
 
     if (appState.user) {
-      dataObject.Location = appState.user.Location
-      dataObject.Persona = appState.user.Persona
+      dataObject.Location = appState.user.Location;
+      dataObject.Persona = appState.user.Persona;
     }
 
     dataObject.timestamp = new Date().toISOString();
@@ -639,7 +711,8 @@ export const updateRecipeById = async (id, updates) => {
       updateObject[`${isEnglish ? "eng" : "esp"}.title`] = updates.title;
     }
     if (updates.description) {
-      updateObject[`${isEnglish ? "eng" : "esp"}.description`] = updates.description;
+      updateObject[`${isEnglish ? "eng" : "esp"}.description`] =
+        updates.description;
     }
     if (updates.price) {
       updateObject["price"] = updates.price; // Price is typically not language-specific
