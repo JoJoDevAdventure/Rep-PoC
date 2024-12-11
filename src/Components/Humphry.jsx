@@ -10,7 +10,7 @@ import HumphryAnimation from "./animations/Humphry.json";
 const Humphry = () => {
   const [isActive, setIsActive] = useState(false); // State for activating Humphry
   const [isListening, setIsListening] = useState(false); // State for speech recognition activity
-  const [agentOutput, setAgentOutput] = useState("Hola! ¿En qué puedo ayudarte?"); // State for agent's real-time output
+  const [agentOutput, setAgentOutput] = useState("Hello! How can I help you?"); // State for agent's real-time output
   const [orderDetails, setOrderDetails] = useState(null); // State for storing final order JSON
   const recipesRef = useRef([]); // Ref for storing menu items
   var conversation = null; // Ref for the ElevenLabs conversation instance
@@ -36,25 +36,23 @@ const Humphry = () => {
   };
 
   const activateAgent = async () => {
-
     try {
       setIsListening(true);
 
       const menuPrompt = recipesRef.current
-        .map((item) => `${item.esp.title}: $${item.price || item.eng.price}`)
+        .map((item) => `${item.eng.title}: $${item.price || item.eng.price}`)
         .join(", ");
 
       const prompts = {
-        spanish: {
-          welcome: "¡Bienvenido! ¿Cómo te llamas?",
-          menu: `Eres un asistente de restaurante. Aquí está el menú: ${menuPrompt}. Guía al usuario para que:
-                1. Proporcione su nombre.
-                2. Especifique los artículos que desea pedir (nombre y cantidad).
-                3. Confirme el pedido y luego desconéctese.`,
+        english: {
+          menu: `You are a restaurant assistant. Here's the menu: ${menuPrompt}. for the price, don't say 9 9, just say ninty-nine Guide the user to:
+                1. Provide their name.
+                2. Specify the items they want to order (name and quantity).
+                3. Confirm the order, then disconnect.`,
         },
-      }
+      };
 
-      const selectedPrompts = prompts.spanish;
+      const selectedPrompts = prompts.english
 
       conversation = await Conversation.startSession({
         agentId: "r2dDTXolSUflTXcUMhbp", // Replace with your ElevenLabs Agent ID
@@ -64,7 +62,6 @@ const Humphry = () => {
             prompt: {
               prompt: selectedPrompts.menu,
             },
-            first_message: selectedPrompts.welcome,
           },
           tts: {
             voiceId: "", // Optional: Provide a voice ID override
@@ -75,14 +72,6 @@ const Humphry = () => {
           console.log("Connected to the conversation.");
         },
 
-        onDisconnect: () => {
-          console.log("Disconnected");
-        },
-
-        onDebug: (props) => {
-          console.log(props);
-        },
-
         onMessage: (props) => {
           // Log the incoming message
           console.log("Received Message:");
@@ -90,9 +79,6 @@ const Humphry = () => {
           console.log("Message:", props.message);
           setAgentOutput(props.message);
         },
-
-        onModeChange: (prop) => {},
-      onStatusChange: (prop) => {},
 
         onError: (message, context) => {
           // Log any errors
@@ -128,29 +114,12 @@ const Humphry = () => {
     console.log("Order JSON:", orderJson);
   };
 
-// Stop the agent and mic when the black background is clicked
-const handleBackgroundClick = async () => {
-  try {
-    // Stop the microphone stream
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const tracks = stream.getTracks(); // Get all tracks from the stream
-      tracks.forEach((track) => track.stop()); // Stop each track
-    }
-
-    // End the ElevenLabs conversation session
-    if (conversationRef.current) {
-      await conversationRef.current.endSession();
-    }
-  } catch (error) {
-    console.error("Error stopping session or microphone:", error);
-  } finally {
-    // Reset the state
+  // Stop the agent and mic when the black background is clicked
+  const handleBackgroundClick = async () => {
+    await conversation.endSession(); // Stop the conversation session
     setIsActive(false);
     setIsListening(false);
-    conversationRef.current = null; // Clear the conversation reference
-  }
-};
+  };
 
   // Toggle Humphry's activation state
   const handleActivation = async () => {

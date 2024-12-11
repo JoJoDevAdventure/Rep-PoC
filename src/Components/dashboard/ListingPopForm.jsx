@@ -1,6 +1,7 @@
 import { appState } from "@/appState";
 import Lottie from "lottie-react";
 import { useEffect, useRef, useState } from "react";
+import RecordRTCPromisesHandler from "recordrtc";
 import WaveSurfer from "wavesurfer.js";
 import loadingAnimation from "../animations/loading.json"; // Path to your Lottie JSON file
 import ImagePicker from "../ImagePicker";
@@ -18,24 +19,28 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
   const waveformRef = useRef(null); // Ref for WaveSurfer container
   const waveSurferRef = useRef(null); // Ref for WaveSurfer instance
   const isEnglish = appState.isEnglish; // Check the current language preference
+  const [recorder, setRecorder] = useState(null); // Ref to hold the recorder instance
+  let streamRef = useRef(null); // Ref to hold the stream instance
 
-    // Translations for the labels
-    const labels = {
-      title: isEnglish ? "Add Item Listing" : "Agregar artículo",
-      imageLabel: isEnglish ? "Product Image" : "Imagen del producto",
-      takePicture: isEnglish ? "Take Picture" : "Tomar foto",
-      orLabel: isEnglish ? "Or" : "O",
-      browseImages: isEnglish ? "Browse Images" : "Seleccionar imágenes",
-      audioLabel: isEnglish ? "Product Description Audio" : "Audio de descripción del producto",
-      uploadAudio: isEnglish ? "Upload Audio" : "Subir audio",
-      recordAudio: isEnglish ? "Record Audio" : "Grabar audio",
-      stopRecording: isEnglish ? "Stop Recording" : "Detener grabación",
-      cancel: isEnglish ? "Cancel" : "Cancelar",
-      save: isEnglish ? "Save" : "Guardar",
-      errorMessage: isEnglish
-        ? "Both audio and image files are required to save."
-        : "Se requieren archivos de audio e imagen para guardar.",
-    };
+  // Translations for the labels
+  const labels = {
+    title: isEnglish ? "Add Item Listing" : "Agregar artículo",
+    imageLabel: isEnglish ? "Product Image" : "Imagen del producto",
+    takePicture: isEnglish ? "Take Picture" : "Tomar foto",
+    orLabel: isEnglish ? "Or" : "O",
+    browseImages: isEnglish ? "Browse Images" : "Seleccionar imágenes",
+    audioLabel: isEnglish
+      ? "Product Description Audio"
+      : "Audio de descripción del producto",
+    uploadAudio: isEnglish ? "Upload Audio" : "Subir audio",
+    recordAudio: isEnglish ? "Record Audio" : "Grabar audio",
+    stopRecording: isEnglish ? "Stop Recording" : "Detener grabación",
+    cancel: isEnglish ? "Cancel" : "Cancelar",
+    save: isEnglish ? "Save" : "Guardar",
+    errorMessage: isEnglish
+      ? "Both audio and image files are required to save."
+      : "Se requieren archivos de audio e imagen para guardar.",
+  };
 
   // Handle file upload (image)
   const handleFileUpload = (event) => {
@@ -46,16 +51,21 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
     }
   };
 
-// Handle "Save" functionality
-const handleSave = () => {
-  if (!uploadedFile || !audioBlob) {
-    console.error("Both audio and image files are required to save.");
-    alert("Error: Both audio and image files are required to save.");
-    return;
-  }
-  console.log("uploaded image :",uploadedFile,"uploaded audio :", audioBlob)
-  onSave({ uploadedFile, audioBlob });
-};
+  // Handle "Save" functionality
+  const handleSave = () => {
+    if (!uploadedFile || !audioBlob) {
+      console.error("Both audio and image files are required to save.");
+      alert("Error: Both audio and image files are required to save.");
+      return;
+    }
+    console.log(
+      "uploaded image :",
+      uploadedFile,
+      "uploaded audio :",
+      audioBlob
+    );
+    // onSave({ uploadedFile, audioBlob });
+  };
 
   // Handle removing image
   const removeImage = () => {
@@ -113,46 +123,79 @@ const handleSave = () => {
 
   // Start recording
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorderRef.current = new MediaRecorder(stream);
-    const chunks = [];
-  
-    mediaRecorderRef.current.ondataavailable = (e) => {
-      chunks.push(e.data);
-    };
-  
-    mediaRecorderRef.current.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/webm" });
-  
+    try {
+      // Get the audio stream
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Store the stream reference
+      streamRef.current = stream;
+
+      // Initialize the recorder with the stream
+      const newRecorder = new RecordRTCPromisesHandler(stream, {
+        type: "audio",
+      });
+
+      // Start the recording
+      await newRecorder.startRecording();
+      console.log("Recording started:", newRecorder);
+
+      // Update the recorder state after starting
+      setRecorder(newRecorder);
+
+      setIsRecording(true); // Show recording icon
+    } catch (error) {
+      console.error("Error accessing the microphone:", error);
+      alert(
+        "Error: Unable to access the microphone. Please check your permissions."
+      );
+    }
+  };
+
+  // Stop recording
+  const stopRecording = async () => {
+    try {
+      if (!recorder) {
+        console.warn("No active recorder to stop.");
+        return; // Exit early if recorder is not initialized
+      }
+
+      console.log("Stopping recorder:", recorder);
+
+      // Stop the recording
+      await recorder.stopRecording();
+
+      // Retrieve the recorded blob
+      const blob = await recorder.getBlob();
+
       // Validate the MIME type
       if (!blob.type.startsWith("audio/")) {
         console.error("Invalid audio format.");
         alert("Error: The recorded file is not a valid audio format.");
         return;
       }
-  
-      // Assign a valid filename
+
+      // Create a File object from the blob
       const fileName = generateFileName("audio", "webm");
       const file = new File([blob], fileName, { type: blob.type });
-  
-      setAudioBlob(file); // Save the file as audioBlob
-      loadWaveform(blob); // Load waveform for recorded audio
-    };
-  
-    mediaRecorderRef.current.start();
-    setIsRecording(true); // Show recording icon
-  };
 
-  // Stop audio recording
-  const stopRecording = () => {
-    mediaRecorderRef.current.stop();
-    setIsRecording(false); // Show pause icon
-  };
+      // Set the recorded audio blob and generate the waveform
+      setAudioBlob(file);
+      loadWaveform(blob);
 
-  // Handle removing audio
-  const removeAudio = () => {
-    setAudioBlob(null);
-    if (waveSurferRef.current) waveSurferRef.current.destroy(); // Destroy waveform
+      // Stop the stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null; // Clear the stream reference
+      }
+
+      recorder.reset(); // Reset the recorder
+      setRecorder(null); // Clear the recorder state
+      setIsRecording(false); // Update the recording state
+
+      console.log("Recording stopped successfully.");
+    } catch (error) {
+      console.error("Error stopping the recording:", error);
+    }
   };
 
   // Toggle play/pause functionality
@@ -168,23 +211,28 @@ const handleSave = () => {
     }
   };
 
-// Handle capturing the photo
-const handleCapture = (image) => {
-  setImagePreview(image); // Save the captured image preview
+  // Handle removing audio
+  const removeAudio = () => {
+    setAudioBlob(null);
+    if (waveSurferRef.current) waveSurferRef.current.destroy(); // Destroy waveform
+  };
+  // Handle capturing the photo
+  const handleCapture = (image) => {
+    setImagePreview(image); // Save the captured image preview
 
-  // Convert the base64 or URL image to a Blob
-  fetch(image)
-    .then((res) => res.blob())
-    .then((blob) => {
-      setUploadedFile(blob); // Set the Blob as the uploaded file
-    })
-    .catch((error) => {
-      console.error("Error converting image to blob:", error);
-      alert("Failed to process the image. Please try again.");
-    });
+    // Convert the base64 or URL image to a Blob
+    fetch(image)
+      .then((res) => res.blob())
+      .then((blob) => {
+        setUploadedFile(blob); // Set the Blob as the uploaded file
+      })
+      .catch((error) => {
+        console.error("Error converting image to blob:", error);
+        alert("Failed to process the image. Please try again.");
+      });
 
-  setIsImagePickerOpen(false); // Close the picker
-};
+    setIsImagePickerOpen(false); // Close the picker
+  };
 
   const handleCameraOpening = () => {
     setIsImagePickerOpen(true);
@@ -199,7 +247,7 @@ const handleCapture = (image) => {
   if (!isOpen) return null; // Do not render if the pop-up is not open
 
   return (
-    <div className="fixed top-0 left-0 w-full md:w-full h-full bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="fixed top-0 left-0 w-full md:w-full h-full bg-black bg-opacity-50 z-50 flex items-center justify-center px-2">
       {isImagePickerOpen && (
         <ImagePicker
           onClose={() => setIsImagePickerOpen(false)}
@@ -248,7 +296,7 @@ const handleCapture = (image) => {
             <>
               <div
                 onClick={() => setIsImagePickerOpen(true)}
-                className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 text-xl w-full mb-4"
+                className="flex flex-row justify-center items-center bg-p1 py-2 gap-2 text-p4 px-4 rounded-lg cursor-pointer hover:bg-p2/10 text-xl w-full mb-1"
               >
                 <svg
                   className="w-6 h-6"
@@ -256,16 +304,15 @@ const handleCapture = (image) => {
                   height="24px"
                   viewBox="0 -960 960 960"
                   width="24px"
-                  fill="#ff5f1f"
+                  fill="#fff6f3"
                 >
                   <path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z" />
                 </svg>
                 {labels.takePicture}
               </div>
-              <div className="w-full h-20 border-2 border-dashed border-p1 rounded-lg flex flex-col items-center justify-center text-center p-4 relative">
-                <div className="flex flex-col justify-center items-center">
-                  <p>{labels.orLabel}</p>
-                  <label className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 w-full text-m">
+                <div className="w-full flex flex-col justify-center items-center">
+                  <p className="text-[12px]">{labels.orLabel}</p>
+                  <label className="flex flex-row justify-center items-center gap-2 text-p1 px-4 rounded-lg cursor-pointer hover:bg-p2/10 w-full text-[12px]">
                     <input
                       type="file"
                       accept="image/*"
@@ -285,7 +332,6 @@ const handleCapture = (image) => {
                     {labels.browseImages}
                   </label>
                 </div>
-              </div>
             </>
           )}
         </div>
@@ -300,7 +346,7 @@ const handleCapture = (image) => {
               <div ref={waveformRef} className="mb-4 h-22"></div>
               <button
                 onClick={removeAudio}
-                className="absolute -bottom-3 right-0 bg-red-500 p-2 rounded-full text-white hover:bg-red-600 focus:outline-none z-50"
+                className="absolute -bottom-3 right-0 bg-red-500 p-2 rounded-full text-white hover:bg-red-600 focus:outline-none z-40"
               >
                 <img
                   src="https://img.icons8.com/ios-filled/24/ffffff/trash.png"
@@ -311,7 +357,7 @@ const handleCapture = (image) => {
 
               <button
                 onClick={togglePlayPause}
-                className="absolute -bottom-3 right-12 bg-p1 p-2 rounded-full text-white hover:bg-red-600 focus:outline-none z-50"
+                className="absolute -bottom-3 right-12 bg-p1 p-2 rounded-full text-white hover:bg-red-600 focus:outline-none z-40"
               >
                 <img
                   src={

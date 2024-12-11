@@ -81,6 +81,11 @@ const ImagePicker = ({ onClose, onCapture }) => {
         const videoInputDevices = devices.filter(
           (device) => device.kind === "videoinput"
         );
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
+        });
+
         setVideoDevices(videoInputDevices);
         setCurrentDeviceIndex(0); // Start with the first device
       } catch (error) {

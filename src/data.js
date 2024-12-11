@@ -30,7 +30,35 @@ export const users = [
   },
   {
     email: "hey@replicaide.com",
-    password: "replicaide888",
+    password: "replicaide8888",
+    username: "ReplicAIDE",
+    Location: {
+      city: "Miami Beach",
+      state: "Florida",
+      country: "US"
+    },
+    Persona: {
+      role: "Manager",
+      temperament: "Chill guy"
+    },
+  },
+  {
+    email: "marbou@joseign.com",
+    password: "marbou2005",
+    username: "ReplicAIDE",
+    Location: {
+      city: "Miami Beach",
+      state: "Florida",
+      country: "US"
+    },
+    Persona: {
+      role: "Manager",
+      temperament: "Chill guy"
+    },
+  },
+  {
+    email: "lexou@test.com",
+    password: "12345678",
     username: "ReplicAIDE",
     Location: {
       city: "Miami Beach",

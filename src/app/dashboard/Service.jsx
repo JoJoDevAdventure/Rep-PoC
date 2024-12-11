@@ -369,16 +369,16 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
            "audio": "Link to the audio (same as input)",
            "image": "Link to the image (same as input)",
            "eng": {
-             "title": "Short, precise title in English",
+             "title": "Short, 2-3 words precise title in English",
              "description": "3 lines description in English of what's visible in the image.",
              "marketing_description": "Catchy marketing description in English based on the image content."
            },
            "esp": {
-             "title": "Short, precise title in Spanish",
+             "title": "Short, 2-3 words precise title in Spanish",
              "description": "3 lines description in Spanish of what's visible in the image.",
              "marketing_description": "Catchy marketing description in Spanish based on the image content."
            },
-           "price": "Suggested price based on the image content or product context (mandatory)."
+           "price": "get the price from analyzing the audio file, if not, just suggest a convinient price"
          }
 
       3. **Error Handling**:
