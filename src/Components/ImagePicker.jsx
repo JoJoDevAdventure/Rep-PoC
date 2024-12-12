@@ -122,15 +122,12 @@ const ImagePicker = ({ onClose, onCapture }) => {
             {isEnglish ? "Cancel" : "Cancelar"}
           </button>
 
-          {/* Switch Camera Button */}
-          {videoDevices.length > 1 && (
             <button
               onClick={switchCamera}
               className="absolute top-4 right-4 border-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-blue-600"
             >
               {isEnglish ? "Switch Camera" : "Cambiar Cámara"}
             </button>
-          )}
 
           {/* Capture Button */}
           <div
