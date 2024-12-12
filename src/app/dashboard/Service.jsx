@@ -551,9 +551,10 @@ Input JSON:
  */
 const logErrorToFirebase = async (logData) => {
   try {
-    const logRef = saveToFirebase("errorLogs"); // Replace with your Firebase logging path
-    await logRef.push(logData);
-    console.log("Error logged to Firebase successfully:", logData);
+    // Add the parsed object to the Firestore collection
+    const docRef = await addDoc(collection(db, "errors_log"), logData);
+
+    console.log("Document successfully written with ID:", docRef.id);
   } catch (firebaseError) {
     console.error("Failed to log error to Firebase:", firebaseError.message);
   }
