@@ -38,7 +38,7 @@ const MenuItems = ({ menuItems, onSelect, isDarkMode }) => {
               <h3 className={`text-lg font-bold ${textColor}`}>{content.title}</h3>
               {/* Description */}
               <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"} mt-2`}>
-                {content.description}
+                {content.marketing_description}
               </p>
               {/* Price */}
               <p className={`text-md font-semibold mt-4 ${textColor}`}>

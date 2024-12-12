@@ -433,12 +433,12 @@ Instructions:
      "eng": {
        "title": "Short, 2-3 words precise title in English",
        "description": "3 lines description in English of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description.",
-       "marketing_description": "Catchy marketing description in English based on the image content."
+       "marketing_description": "Catchy marketing description in English based on the image content, 2-3 sentences"
      },
      "esp": {
        "title": "Short, 2-3 words precise title in Spanish",
-       "description": "3 lines description in Spanish of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description.",
-       "marketing_description": "Catchy marketing description in Spanish based on the image content."
+       "description": "3 lines description in Spanish of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description. don't start with "this image is",
+       "marketing_description": "Catchy marketing description in Spanish based on the image content, 2-3 sentences."
      },
      "price": "Get the price from analyzing the audio transcription if mentioned; otherwise, suggest a convenient price."
    }

@@ -155,7 +155,7 @@ const MainContent = ({ id }) => {
             </label>
             <textarea
               id="description"
-              defaultValue={content?.description}
+              defaultValue={content?.marketing_description}
               rows={4}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             ></textarea>
