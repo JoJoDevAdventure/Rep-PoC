@@ -1,6 +1,5 @@
 import { appState } from "@/appState";
 import { useTheme } from "../../app/context/themeContext"; // Theme context to manage dark/light mode
-import LanguageSwitch from "../LanguageSwitch";
 import ThemeSwitch from "../ThemeSwitch";
 
 const Header = ({ username, onRefresh }) => {
@@ -50,7 +49,7 @@ const Header = ({ username, onRefresh }) => {
           {appState.isEnglish ? "Upgrade" : "Actualiza"}
         </button>
         <div className="flex flex-row-reverse gap-4 ">
-          <LanguageSwitch />
+          {/* <LanguageSwitch /> */}
           {/* Theme Toggle Switch */}
           <ThemeSwitch />
         </div>
