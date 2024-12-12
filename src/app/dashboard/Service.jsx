@@ -533,11 +533,11 @@ Input JSON:
       username: appState.user?.username || "Unknown",
       timestamp: new Date().toISOString(),
       error: error.message,
-      audio_transcription,
-      audioUrl,
-      imageUrl,
-      cleanedResponse,
-      outputObj,
+      Transcription: audio_transcription,
+      audio: audioUrl,
+      image: imageUrl,
+      cleanedResponseOPENAI: cleanedResponse,
+      saveToFirebase: outputObj,
       
     };
     await logErrorToFirebase(logData);
