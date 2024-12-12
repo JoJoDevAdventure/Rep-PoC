@@ -496,7 +496,7 @@ Input JSON:
       !outputObj.audio ||
       !outputObj.image ||
       !outputObj.eng ||
-      !outputObj.esp 
+      !outputObj.esp
     ) {
       throw new Error("Invalid data structure: Required fields are missing.");
     }
@@ -528,10 +528,34 @@ Input JSON:
     return output; // Return the structured JSON
   } catch (error) {
     console.error("Error analyzing media:", error.message);
-    
+
+    // Log error to Firebase with user details and timestamp
+    const logData = {
+      username: appState.user?.username || "Unknown",
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      audioUrl,
+      imageUrl,
+    };
+    await logErrorToFirebase(logData);
+
     return {
       error: error.message,
     };
+  }
+};
+
+/**
+ * Log errors to Firebase with user details and timestamp
+ * @param {object} logData - The log data to be saved
+ */
+const logErrorToFirebase = async (logData) => {
+  try {
+    const logRef = saveToFirebase("errorLogs"); // Replace with your Firebase logging path
+    await logRef.push(logData);
+    console.log("Error logged to Firebase successfully:", logData);
+  } catch (firebaseError) {
+    console.error("Failed to log error to Firebase:", firebaseError.message);
   }
 };
 
