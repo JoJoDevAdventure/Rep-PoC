@@ -10,7 +10,7 @@ import HumphryAnimation from "./animations/Humphry.json";
 const Humphry = () => {
   const [isActive, setIsActive] = useState(false); // State for activating Humphry
   const [isListening, setIsListening] = useState(false); // State for speech recognition activity
-  const [agentOutput, setAgentOutput] = useState("Hello! How can I help you?"); // State for agent's real-time output
+  const [agentOutput, setAgentOutput] = useState("Hola, ¿Cómo puedo ayudarte hoy?"); // State for agent's real-time output
   const [orderDetails, setOrderDetails] = useState(null); // State for storing final order JSON
   const recipesRef = useRef([]); // Ref for storing menu items
   var conversation = null; // Ref for the ElevenLabs conversation instance
@@ -38,56 +38,51 @@ const Humphry = () => {
   const activateAgent = async () => {
     try {
       setIsListening(true);
-
+  
       const menuPrompt = recipesRef.current
-        .map((item) => `${item.eng.title}: $${item.price || item.eng.price}`)
+        .map((item) => `${item.esp.title}: $${item.price || item.eng.price}`)
         .join(", ");
-
-      const prompts = {
-        english: {
-          menu: `You are a restaurant assistant. Here's the menu: ${menuPrompt}. for the price, don't say 9 9, just say ninty-nine Guide the user to:
-                1. Provide their name.
-                2. Specify the items they want to order (name and quantity).
-                3. Confirm the order, then disconnect.`,
-        },
-      };
-
-      const selectedPrompts = prompts.english
-
+  
+      // Use Spanish prompt
+      const spanishPrompt = `Eres un asistente de restaurante. Aquí está el menú: ${menuPrompt}. Para el precio, no digas 9 9, solo di noventa y nueve. Guía al usuario para:
+            1. Proporcionar su nombre.
+            2. Especificar los artículos que desea pedir (nombre y cantidad).
+            3. Confirmar el pedido, luego desconectar.`;
+  
       conversation = await Conversation.startSession({
-        agentId: "r2dDTXolSUflTXcUMhbp", // Replace with your ElevenLabs Agent ID
-
+        agentId: "UjfdWs9FFrb1OXa7Lyjd", // Replace with your ElevenLabs Agent ID
+  
         overrides: {
           agent: {
             prompt: {
-              prompt: selectedPrompts.menu,
+              prompt: spanishPrompt,
             },
           },
           tts: {
             voiceId: "", // Optional: Provide a voice ID override
           },
         },
-
+  
         onConnect: () => {
-          console.log("Connected to the conversation.");
+          console.log("Conectado a la conversación.");
         },
-
+  
         onMessage: (props) => {
           // Log the incoming message
-          console.log("Received Message:");
-          console.log("Source:", props.source); // "user" or "ai"
-          console.log("Message:", props.message);
+          console.log("Mensaje recibido:");
+          console.log("Fuente:", props.source); // "user" or "ai"
+          console.log("Mensaje:", props.message);
           setAgentOutput(props.message);
         },
-
+  
         onError: (message, context) => {
           // Log any errors
-          console.error("Error in conversation:", message, context);
+          console.error("Error en la conversación:", message, context);
         },
       });
     } catch (error) {
-      console.error("Error starting agent conversation:", error);
-      setAgentOutput(isEnglish ? "Sorry, something went wrong." : "Lo siento, algo salió mal.");
+      console.error("Error al iniciar la conversación con el agente:", error);
+      setAgentOutput("Lo siento, algo salió mal.");
     } finally {
       setIsListening(false);
     }
@@ -169,7 +164,7 @@ const Humphry = () => {
                   {isEnglish ? "Listening..." : "Escuchando..."}
                 </p>
               ) : (
-                <p className="text-white text-xl">{agentOutput}</p>
+                <p className="text-white text-[12px]">{agentOutput}</p>
               )}
             </div>
           ) : (

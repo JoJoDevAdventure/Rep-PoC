@@ -528,6 +528,7 @@ Input JSON:
     return output; // Return the structured JSON
   } catch (error) {
     console.error("Error analyzing media:", error.message);
+    
     return {
       error: error.message,
     };
