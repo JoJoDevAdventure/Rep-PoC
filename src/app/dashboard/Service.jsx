@@ -527,15 +527,18 @@ Input JSON:
 
     return output; // Return the structured JSON
   } catch (error) {
-    console.error("Error analyzing media:", error.message);
 
     // Log error to Firebase with user details and timestamp
     const logData = {
       username: appState.user?.username || "Unknown",
       timestamp: new Date().toISOString(),
       error: error.message,
+      audio_transcription,
       audioUrl,
       imageUrl,
+      cleanedResponse,
+      outputObj,
+      
     };
     await logErrorToFirebase(logData);
 
