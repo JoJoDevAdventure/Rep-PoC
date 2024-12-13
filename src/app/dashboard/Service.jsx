@@ -522,16 +522,8 @@ Input JSON:
     const output = saveToFirebase(JSON.stringify(outputObj));
 
     return output; // Return the structured JSON
+    
   } catch (error) {
-    // Safely handle outputObj for logging
-    const outputLog = outputObj
-      ? JSON.stringify(outputObj, (key, value) => {
-          if (typeof value === "undefined") {
-            return null; // Replace undefined values with null
-          }
-          return value;
-        })
-      : "No output object available";
 
     const logData = {
       username: appState.user?.username || "Unknown",
@@ -539,7 +531,6 @@ Input JSON:
       error: error.message || "Unknown error",
       imageUrl: imageUrl || "No image URL",
       audioUrl: audioUrl || "No audio URL",
-      output: outputLog,
     };
 
     console.error("Error Logging Data:", logData);
