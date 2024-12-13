@@ -1,5 +1,6 @@
 "use client";
 
+import { appState } from "@/appState";
 import ActionsBar from "@/Components/dashboard/ActionsBar";
 import ListingPopForm from "@/Components/dashboard/ListingPopForm";
 import Loading from "@/Components/Loading";
@@ -37,7 +38,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
 
       const response = await processListing({ uploadedFile, audioBlob });
       setIsLoading(false);
-      
+
     } catch (error) {
 
       const logData = {
@@ -48,7 +49,12 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
         audioBlob,
       };
       window.alert("Failed to save, please try again", error.message);
-      await logErrorToFirebase(logData);
+      try {
+        await logErrorToFirebase(logData);
+
+      } catch (e) {
+        window.alert("Failed to save the error", e.message);
+      }
       setIsLoading(false);
     } finally {
       setIsPopUpOpen(false); // Close the pop-up after saving
