@@ -38,7 +38,6 @@ const ImagePicker = ({ onClose, onCapture }) => {
     setIsCameraActive(false);
   };
 
-  // Capture the image
   const captureImage = () => {
     const canvas = document.createElement("canvas");
     const video = videoRef.current;
@@ -47,7 +46,9 @@ const ImagePicker = ({ onClose, onCapture }) => {
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageDataUrl = canvas.toDataURL("image/png");
+  
+      // Convert to JPEG format with a quality setting (optional, e.g., 0.9 for high quality)
+      const imageDataUrl = canvas.toDataURL("image/jpeg", 0.9);
       setImagePreview(imageDataUrl);
       stopCamera(); // Stop the camera after capturing
     }
