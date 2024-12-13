@@ -407,7 +407,7 @@ You are an AI assistant tasked with analyzing an image input and audio transcrip
 
 Instructions:
 1. **Image Analysis**: 
-   - Describe exactly what is visible in the image.
+   - Describe exactly what is visible in the image, it's either JPEG or PNG format, if the URL is invalid ignore and base only on audio_transcription.
    - Avoid assumptions unless clearly inferable from the content.
    - Focus on factual observations: food, objects, colors, patterns, or text.
 
@@ -529,7 +529,10 @@ Input JSON:
     const logData = {
       username: appState.user?.username || "Unknown",
       timestamp: new Date().toISOString(),
-      error: error.message,      
+      error: error.message,
+      imageUrl,
+      audioUrl,
+      output : outputObj ? JSON.stringify(outputObj) : "No output object",
     };
     await logErrorToFirebase(logData);
 
