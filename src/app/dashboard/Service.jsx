@@ -430,7 +430,7 @@ Instructions:
        "description": "3 lines description in Spanish of what's visible in the image and any relevant information from the audio transcription. don't mention the price in the description. don't start with "this image is",
        "marketing_description": "Catchy marketing description in Spanish based on the image content, 2-3 sentences."
      },
-     "price": "Get the price from analyzing the audio transcription if mentioned; otherwise, suggest a convenient price."
+     "price": "Get the price from analyzing the audio transcription if mentioned; otherwise, suggest a convenient price. just the price, don't form a sentence, format : Currency XX.XX
    }
 
 3. **Error Handling**:
