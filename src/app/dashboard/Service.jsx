@@ -270,16 +270,7 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
 
     return response; // Return the response from the saveListing function
   } catch (error) {
-    console.error("Error processing listing:", error);
-        // Log error to Firebase with user details and timestamp
-        const logData = {
-          username: appState.user?.username || "Unknown",
-          timestamp: new Date().toISOString(),
-          error: error.message,
-          imageLink: imageLink || "No image link",
-          audioLink: audioLink || "No audio link",
-        };
-        await logErrorToFirebase(logData);
+    console.log(error)
     throw error; // Propagate the error for the calling function to handle
   }
 };
@@ -490,6 +481,13 @@ Input JSON:
     // Parse the cleaned response as JSON
     const outputObj = JSON.parse(cleanedResponse);
 
+    console.log(outputObj)
+
+    if (outputObj.error) {
+      console.log(outputObj.error)
+      throw new Error(outputObj.error);
+    }
+
     // Validate required fields in the parsed object
     if (
       !outputObj.audio ||
@@ -526,17 +524,12 @@ Input JSON:
 
     return output; // Return the structured JSON
   } catch (error) {
-
+    console.log(error)
     // Log error to Firebase with user details and timestamp
     const logData = {
       username: appState.user?.username || "Unknown",
       timestamp: new Date().toISOString(),
-      error: error.message,
-      Transcription: audio_transcription,
-      audio: audioUrl,
-      image: imageUrl,
-      cleanedResponseOPENAI: cleanedResponse,
-      saveToFirebase: outputObj,
+      error: error.message,      
     };
     await logErrorToFirebase(logData);
 

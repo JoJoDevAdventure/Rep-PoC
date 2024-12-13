@@ -47,9 +47,18 @@ const ImagePicker = ({ onClose, onCapture }) => {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
-      // Convert to JPEG format with a quality setting (optional, e.g., 0.9 for high quality)
-      const imageDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-      setImagePreview(imageDataUrl);
+      // Convert to a Blob as JPEG
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const imageDataUrl = URL.createObjectURL(blob);
+            setImagePreview(imageDataUrl);
+          }
+        },
+        "image/jpeg",
+        0.9 // Adjust quality if needed
+      );
+  
       stopCamera(); // Stop the camera after capturing
     }
   };
@@ -87,11 +96,6 @@ const ImagePicker = ({ onClose, onCapture }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
         });
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream; // Set video source to the camera stream
-          setIsCameraActive(true);
-        }
 
         setVideoDevices(videoInputDevices);
         setCurrentDeviceIndex(0); // Start with the first device
