@@ -89,16 +89,15 @@ const ImagePicker = ({ onClose, onCapture }) => {
     const getVideoDevices = async () => {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
+
         const videoInputDevices = devices.filter(
           (device) => device.kind === "videoinput"
         );
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
-        });
-
         setVideoDevices(videoInputDevices);
         setCurrentDeviceIndex(0); // Start with the first device
+
+        await startCamera()
       } catch (error) {
         console.error("Error fetching video devices:", error);
       }
@@ -139,9 +138,17 @@ const ImagePicker = ({ onClose, onCapture }) => {
           {videoDevices.length > 1 && (
             <button
               onClick={switchCamera}
-              className="absolute top-4 right-4 border-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-blue-600"
+              className="absolute top-2 right-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-l"
             >
-              {isEnglish ? "Switch Camera" : "Cambiar Cámara"}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="42px"
+              viewBox="0 -960 960 960"
+              width="42px"
+              fill="#ffffff"
+            >
+              <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z" />
+            </svg>
             </button>
           )}
 
