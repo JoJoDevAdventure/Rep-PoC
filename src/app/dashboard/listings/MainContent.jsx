@@ -33,7 +33,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
       const response = await processListing({ uploadedFile, audioBlob });
       setIsLoading(false)
     } catch (error) {
-      window.alert("Failed to save, please try again")
+      window.alert("Failed to save, please try again", error)
       setIsLoading(false)
     } finally {
       setIsPopUpOpen(false); // Close the pop-up after saving
