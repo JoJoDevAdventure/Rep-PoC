@@ -18,7 +18,6 @@ const ImagePicker = ({ onClose, onCapture }) => {
           video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
         });
 
-        console.log(videoDevices.length)
         if (videoRef.current) {
           videoRef.current.srcObject = stream; // Set video source to the camera stream
           setIsCameraActive(true);
@@ -62,9 +61,11 @@ const ImagePicker = ({ onClose, onCapture }) => {
 
   // Switch to the next camera
   const switchCamera = () => {
-    stopCamera(); // Stop the current camera
-    const nextIndex = (currentDeviceIndex + 1) % videoDevices.length;
-    setCurrentDeviceIndex(nextIndex); // Set the next camera as active
+    if (videoDevices.length > 1) {
+      stopCamera(); // Stop the current camera
+      const nextIndex = (currentDeviceIndex + 1) % videoDevices.length;
+      setCurrentDeviceIndex(nextIndex); // Set the next camera as active
+    }
   };
 
   // Handle closing the picker
@@ -86,6 +87,11 @@ const ImagePicker = ({ onClose, onCapture }) => {
           video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
         });
 
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream; // Set video source to the camera stream
+          setIsCameraActive(true);
+        }
+
         setVideoDevices(videoInputDevices);
         setCurrentDeviceIndex(0); // Start with the first device
       } catch (error) {
@@ -96,9 +102,11 @@ const ImagePicker = ({ onClose, onCapture }) => {
     getVideoDevices();
   }, []);
 
-  // Start the camera when the component is mounted or the device changes
+  // Start the camera when the component is mounted or the device index changes
   useEffect(() => {
-    startCamera();
+    if (videoDevices.length > 0) {
+      startCamera();
+    }
     return () => stopCamera(); // Clean up when the component is unmounted
   }, [currentDeviceIndex, videoDevices]);
 
@@ -122,12 +130,15 @@ const ImagePicker = ({ onClose, onCapture }) => {
             {isEnglish ? "Cancel" : "Cancelar"}
           </button>
 
+          {/* Switch Camera Button */}
+          {videoDevices.length > 1 && (
             <button
               onClick={switchCamera}
               className="absolute top-4 right-4 border-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-blue-600"
             >
               {isEnglish ? "Switch Camera" : "Cambiar Cámara"}
             </button>
+          )}
 
           {/* Capture Button */}
           <div
