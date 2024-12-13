@@ -34,9 +34,12 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
     );
 
     try {
+
       const response = await processListing({ uploadedFile, audioBlob });
       setIsLoading(false);
+      
     } catch (error) {
+
       const logData = {
         username: appState.user?.username || "Unknown",
         timestamp: new Date().toISOString(),

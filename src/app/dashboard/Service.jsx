@@ -240,6 +240,7 @@ export const saveListing = async ({ imageLink, audioLink }) => {
  */
 
 export const processListing = async ({ uploadedFile, audioBlob }) => {
+
   // Validate inputs
   if (!(uploadedFile instanceof Blob)) {
     console.error("Uploaded image is not a valid Blob or File:", uploadedFile);

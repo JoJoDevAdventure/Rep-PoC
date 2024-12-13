@@ -101,7 +101,7 @@ export const users = [
   {
     email: "lexou@test.com",
     password: "12345678",
-    username: "ReplicAIDE",
+    username: "Ma Belle",
     Location: {
       city: "Miami Beach",
       state: "Florida",
