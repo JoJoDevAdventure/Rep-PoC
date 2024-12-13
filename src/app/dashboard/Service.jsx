@@ -283,6 +283,15 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     return response; // Return the response from the saveListing function
   } catch (error) {
     console.error("Error processing listing:", error);
+        // Log error to Firebase with user details and timestamp
+        const logData = {
+          username: appState.user?.username || "Unknown",
+          timestamp: new Date().toISOString(),
+          error: error.message,
+          imageLink: imageLink || "No image link",
+          audioLink: audioLink || "No audio link",
+        };
+        await logErrorToFirebase(logData);
     throw error; // Propagate the error for the calling function to handle
   }
 };
