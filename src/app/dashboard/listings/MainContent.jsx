@@ -39,7 +39,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
       setIsLoading(false);
 
     } catch (error) {
-      window.alert("Failed to save: ", error.message);
+      window.alert(`Failed to save: ${error.message}`);
       setIsLoading(false);
     } finally {
       setIsPopUpOpen(false); // Close the pop-up after saving

@@ -241,7 +241,6 @@ export const saveListing = async ({ imageLink, audioLink }) => {
 
 export const processListing = async ({ uploadedFile, audioBlob }) => {
   try {
-
     console.log("Uploading image...");
     const imageLink = await uploadFileToGitHub(
       uploadedFile,
@@ -270,7 +269,7 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
 
     return response; // Return the response from the saveListing function
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw error; // Propagate the error for the calling function to handle
   }
 };
@@ -481,10 +480,10 @@ Input JSON:
     // Parse the cleaned response as JSON
     const outputObj = JSON.parse(cleanedResponse);
 
-    console.log(outputObj)
+    console.log(outputObj);
 
     if (outputObj.error) {
-      console.log(outputObj.error)
+      console.log(outputObj.error);
       throw new Error(outputObj.error);
     }
 
@@ -524,17 +523,33 @@ Input JSON:
 
     return output; // Return the structured JSON
   } catch (error) {
-    console.log(error)
-    // Log error to Firebase with user details and timestamp
+    // Safely handle outputObj for logging
+    const outputLog = outputObj
+      ? JSON.stringify(outputObj, (key, value) => {
+          if (typeof value === "undefined") {
+            return null; // Replace undefined values with null
+          }
+          return value;
+        })
+      : "No output object available";
+
     const logData = {
       username: appState.user?.username || "Unknown",
       timestamp: new Date().toISOString(),
-      error: error.message,
-      imageUrl,
-      audioUrl,
-      output : outputObj ? JSON.stringify(outputObj) : "No output object",
+      error: error.message || "Unknown error",
+      imageUrl: imageUrl || "No image URL",
+      audioUrl: audioUrl || "No audio URL",
+      output: outputLog,
     };
-    await logErrorToFirebase(logData);
+
+    console.error("Error Logging Data:", logData);
+
+    // Log error to Firebase
+    try {
+      await logErrorToFirebase(logData);
+    } catch (firebaseError) {
+      console.error("Error logging to Firebase:", firebaseError.message);
+    }
 
     return {
       error: error.message,
