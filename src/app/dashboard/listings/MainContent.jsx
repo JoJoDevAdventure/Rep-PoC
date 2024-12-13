@@ -1,6 +1,5 @@
 "use client";
 
-import { appState } from "@/appState";
 import ActionsBar from "@/Components/dashboard/ActionsBar";
 import ListingPopForm from "@/Components/dashboard/ListingPopForm";
 import Loading from "@/Components/Loading";
@@ -40,21 +39,7 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
       setIsLoading(false);
 
     } catch (error) {
-
-      const logData = {
-        username: appState.user?.username || "Unknown",
-        timestamp: new Date().toISOString(),
-        error: error.message,
-        uploadedFile,
-        audioBlob,
-      };
-      window.alert("Failed to save, please try again", error.message);
-      try {
-        await logErrorToFirebase(logData);
-
-      } catch (e) {
-        window.alert("Failed to save the error", e.message);
-      }
+      window.alert("Failed to save: ", error.message);
       setIsLoading(false);
     } finally {
       setIsPopUpOpen(false); // Close the pop-up after saving
