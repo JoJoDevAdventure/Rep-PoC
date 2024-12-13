@@ -17,32 +17,42 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
 
   const router = useRouter(); // Router instance for navigation
 
-
   // Handle cancel action in the pop-up form
   const handleCancel = () => {
     setIsPopUpOpen(false); // Close the pop-up when canceled
   };
 
   const handleSave = async ({ uploadedFile, audioBlob }) => {
-    setIsLoading(true)
-    setIsPopUpOpen(false)
+    setIsLoading(true);
+    setIsPopUpOpen(false);
 
-    console.log("uploaded image : ", uploadedFile, "uploaded audio : ", audioBlob)
+    console.log(
+      "uploaded image : ",
+      uploadedFile,
+      "uploaded audio : ",
+      audioBlob
+    );
 
     try {
       const response = await processListing({ uploadedFile, audioBlob });
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
-      window.alert("Failed to save, please try again", error)
-      setIsLoading(false)
+      const logData = {
+        username: appState.user?.username || "Unknown",
+        timestamp: new Date().toISOString(),
+        error: error.message,
+        uploadedFile,
+        audioBlob,
+      };
+      window.alert("Failed to save, please try again", error.message);
+      await logErrorToFirebase(logData);
+      setIsLoading(false);
     } finally {
       setIsPopUpOpen(false); // Close the pop-up after saving
-      setIsLoading(false)
-      onReload()
+      setIsLoading(false);
+      onReload();
     }
   };
-
-
 
   return (
     <div

@@ -252,6 +252,7 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
   }
 
   try {
+
     console.log("Uploading image...");
     const imageLink = await uploadFileToGitHub(
       uploadedFile,
@@ -538,7 +539,6 @@ Input JSON:
       image: imageUrl,
       cleanedResponseOPENAI: cleanedResponse,
       saveToFirebase: outputObj,
-      
     };
     await logErrorToFirebase(logData);
 
