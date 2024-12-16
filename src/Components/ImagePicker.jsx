@@ -124,7 +124,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
           {/* Cancel Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 left-4 border-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-red-600"
+            className="absolute top-5 left-4 bg-p1 text-gray-200 px-4 py-2 rounded shadow-lg hover:bg-red-600"
           >
             {isEnglish ? "Cancel" : "Cancelar"}
           </button>
@@ -133,7 +133,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
           {videoDevices.length > 1 && (
             <button
               onClick={switchCamera}
-              className="absolute top-2 right-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg"
+              className="absolute top-4 right-4 bg-p1 border-gray-200 text-gray-200 p-1 shadow-lg rounded-full"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

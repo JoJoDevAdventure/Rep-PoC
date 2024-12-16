@@ -61,7 +61,7 @@ const loadRecipes = async () => {
   }
 
   return (
-    <div className="flex md:max-h-[100vh] pb-12 md:pb-0 md:overflow-hidden">
+    <div className="flex min-h-[100vh] pb-12 md:pb-0 md:overflow-hidden">
       {/* Sidebar Navigation */}
       <SideBar />
 

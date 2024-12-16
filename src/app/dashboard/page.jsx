@@ -33,7 +33,7 @@ const Dashboard = () => {
   }, [router]); // Dependency ensures this runs whenever `router` changes
 
   return (
-    <div className="flex md:max-h-[100vh] md:overflow-hidden pb-12">
+    <div className="flex max-h-[100vh] md:overflow-hidden pb-12">
       <Humphry />
       {/* Sidebar Navigation */}
       <SideBar />

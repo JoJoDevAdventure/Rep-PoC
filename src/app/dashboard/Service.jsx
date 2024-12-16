@@ -2,12 +2,12 @@ import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    getDocs,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
 } from "firebase/firestore"; // Firestore functions
 import { db } from "../../../firebase"; // Firestore instance
 
@@ -436,13 +436,14 @@ Instructions:
 3. **Error Handling**:
    - If the URLs are invalid or content cannot be analyzed, return:
      {
-       "error": "Description of the issue."
+       "error": "Describe the error here."
      }
 
 4. **Additional Notes**:
    - Avoid starting descriptions with "This is a..." or "The image describes/shows...".
    - Marketing descriptions should be engaging but relevant to the image.
    - Avoid starting titles with "delicious" or other generic words.
+   - If the image URL is invalid ignore it and base only on audio_transcription.
 
 Input JSON:
 {
@@ -490,9 +491,6 @@ Input JSON:
 
     // Validate required fields in the parsed object
     if (
-      !outputObj.audio ||
-      !outputObj.image ||
-      !outputObj.eng ||
       !outputObj.esp
     ) {
       throw new Error("Invalid data structure: Required fields are missing.");
@@ -539,6 +537,7 @@ Input JSON:
     // Log error to Firebase
     try {
       await logErrorToFirebase(logData);
+      throw new Error(error.message);
     } catch (firebaseError) {
       console.error("Error logging to Firebase:", firebaseError.message);
     }
@@ -610,16 +609,6 @@ export const saveToFirebase = async (jsonData) => {
   try {
     // Parse the JSON string into an object
     const dataObject = JSON.parse(jsonData);
-
-    // Validate required fields in the parsed object
-    if (
-      !dataObject.audio ||
-      !dataObject.image ||
-      !dataObject.eng ||
-      !dataObject.esp
-    ) {
-      throw new Error("Invalid data structure: Required fields are missing.");
-    }
 
     if (appState.user) {
       dataObject.Location = appState.user.Location;
