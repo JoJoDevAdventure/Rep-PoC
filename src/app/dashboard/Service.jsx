@@ -2,12 +2,12 @@ import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
 import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
 } from "firebase/firestore"; // Firestore functions
 import { db } from "../../../firebase"; // Firestore instance
 
@@ -406,9 +406,10 @@ You are an AI assistant tasked with analyzing an image input and audio transcrip
 
 Instructions:
 1. **Image Analysis**: 
-   - Describe exactly what is visible in the image, it's either JPEG or PNG format, if the URL is invalid ignore and base only on audio_transcription.
+   - Describe exactly what is visible in the image, it's either JPEG or PNG format.
    - Avoid assumptions unless clearly inferable from the content.
    - Focus on factual observations: food, objects, colors, patterns, or text.
+   - If the URL is invalid ignore and base only on audio_transcription.
 
 2. Output JSON Format:
    - Retain the same input URLs for audio and image.
@@ -522,7 +523,7 @@ Input JSON:
     const output = saveToFirebase(JSON.stringify(outputObj));
 
     return output; // Return the structured JSON
-    
+
   } catch (error) {
 
     const logData = {

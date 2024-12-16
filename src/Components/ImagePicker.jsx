@@ -10,18 +10,35 @@ const ImagePicker = ({ onClose, onCapture }) => {
 
   const isEnglish = appState.isEnglish; // Get language preference
 
-  // Start the camera with the selected device
-  const startCamera = async () => {
+  // Request permissions and start the camera
+  const initializeCamera = async () => {
     try {
-      if (videoDevices.length > 0) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: videoDevices[currentDeviceIndex]?.deviceId },
-        });
+      // Request permissions and start the camera
+      await navigator.mediaDevices.getUserMedia({ video: true });
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream; // Set video source to the camera stream
-          setIsCameraActive(true);
-        }
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputDevices = devices.filter(
+        (device) => device.kind === "videoinput"
+      );
+
+      setVideoDevices(videoInputDevices);
+      setCurrentDeviceIndex(0);
+      startCamera(0); // Start with the first camera
+    } catch (error) {
+      console.error("Error initializing camera:", error);
+    }
+  };
+
+  // Start the camera with the selected device
+  const startCamera = async (deviceIndex) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: videoDevices[deviceIndex]?.deviceId },
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream; // Set video source to the camera stream
+        setIsCameraActive(true);
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -38,6 +55,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
     setIsCameraActive(false);
   };
 
+  // Capture image
   const captureImage = () => {
     const canvas = document.createElement("canvas");
     const video = videoRef.current;
@@ -46,7 +64,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
+
       // Convert to a Blob as JPEG
       canvas.toBlob(
         (blob) => {
@@ -58,7 +76,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
         "image/jpeg",
         0.9 // Adjust quality if needed
       );
-  
+
       stopCamera(); // Stop the camera after capturing
     }
   };
@@ -66,7 +84,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
   // Retake the image
   const retakeImage = () => {
     setImagePreview(null);
-    startCamera(); // Restart the camera
+    startCamera(currentDeviceIndex); // Restart the camera
   };
 
   // Switch to the next camera
@@ -75,6 +93,7 @@ const ImagePicker = ({ onClose, onCapture }) => {
       stopCamera(); // Stop the current camera
       const nextIndex = (currentDeviceIndex + 1) % videoDevices.length;
       setCurrentDeviceIndex(nextIndex); // Set the next camera as active
+      startCamera(nextIndex);
     }
   };
 
@@ -84,35 +103,11 @@ const ImagePicker = ({ onClose, onCapture }) => {
     onClose();
   };
 
-  // Get the list of video devices on component mount
+  // Initialize the camera and devices on component mount
   useEffect(() => {
-    const getVideoDevices = async () => {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-
-        const videoInputDevices = devices.filter(
-          (device) => device.kind === "videoinput"
-        );
-
-        setVideoDevices(videoInputDevices);
-        setCurrentDeviceIndex(0); // Start with the first device
-
-        await startCamera()
-      } catch (error) {
-        console.error("Error fetching video devices:", error);
-      }
-    };
-
-    getVideoDevices();
-  }, []);
-
-  // Start the camera when the component is mounted or the device index changes
-  useEffect(() => {
-    if (videoDevices.length > 0) {
-      startCamera();
-    }
+    initializeCamera();
     return () => stopCamera(); // Clean up when the component is unmounted
-  }, [currentDeviceIndex, videoDevices]);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex flex-col items-center justify-center">
@@ -138,25 +133,25 @@ const ImagePicker = ({ onClose, onCapture }) => {
           {videoDevices.length > 1 && (
             <button
               onClick={switchCamera}
-              className="absolute top-2 right-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-l"
+              className="absolute top-2 right-2 border-gray-200 text-gray-200 px-4 py-2 rounded shadow-lg"
             >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="42px"
-              viewBox="0 -960 960 960"
-              width="42px"
-              fill="#ffffff"
-            >
-              <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z" />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="42px"
+                viewBox="0 -960 960 960"
+                width="42px"
+                fill="#ffffff"
+              >
+                <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z" />
+              </svg>
             </button>
           )}
 
           {/* Capture Button */}
-          <div
+          <button
             onClick={captureImage}
             className="absolute bottom-8 w-16 h-16 bg-white rounded-full cursor-pointer flex items-center justify-center shadow-lg"
-          ></div>
+          ></button>
         </>
       ) : (
         <>
