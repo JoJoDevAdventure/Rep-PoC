@@ -263,11 +263,8 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     console.log("Processing...");
     // const response = await saveListing({ imageLink, audioLink });
 
-    const response = await analyzeMedia(audioLink, imageLink, audioBlob);
+    await analyzeMedia(audioLink, imageLink, audioBlob);
 
-    console.log("Listing saved successfully:", response);
-
-    return response; // Return the response from the saveListing function
   } catch (error) {
     console.log(error);
     throw error; // Propagate the error for the calling function to handle
@@ -402,10 +399,10 @@ export const analyzeMedia = async (audioUrl, imageUrl, audioBlob) => {
 
     // Define the OpenAI prompt
     const prompt = `
-You are an AI assistant tasked with analyzing an image input and audio transcription. Your output should be a structured JSON object based solely on the visible content of the image and information from the transcription.
+You are an AI assistant tasked with analyzing an image input and audio transcription. Your output should be a structured JSON object based solely on the visible content of the image and information from the transcription JUST JSON starting with "{".
 
 Instructions:
-1. **Image Analysis**: 
+1. **Image Analysis**:
    - Describe exactly what is visible in the image, it's either JPEG or PNG format.
    - Avoid assumptions unless clearly inferable from the content.
    - Focus on factual observations: food, objects, colors, patterns, or text.
@@ -474,9 +471,9 @@ Input JSON:
 
     console.log("Raw API Response:", responseContent);
 
-    // Remove Markdown formatting (e.g., ```json and ```)
-    const cleanedResponse = responseContent.replace(/```json|```/g, "").trim();
-
+    // Ensure cleanedResponse starts from the first `{`
+    const cleanedResponse = responseContent.substring(responseContent.indexOf("{")).trim();
+    
     console.log("Cleaned Response:", cleanedResponse);
 
     // Parse the cleaned response as JSON
@@ -532,19 +529,8 @@ Input JSON:
       audioUrl: audioUrl || "No audio URL",
     };
 
-    console.error("Error Logging Data:", logData);
-
-    // Log error to Firebase
-    try {
-      await logErrorToFirebase(logData);
-      throw new Error(error.message);
-    } catch (firebaseError) {
-      console.error("Error logging to Firebase:", firebaseError.message);
-    }
-
-    return {
-      error: error.message,
-    };
+    await logErrorToFirebase(logData);
+    throw new Error(error.message);
   }
 };
 
