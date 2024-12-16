@@ -465,14 +465,18 @@ Input JSON:
         },
       ],
       temperature: 0.2,
+      response_format : { "type": "json_object" }
     });
 
     const responseContent = completion.choices[0]?.message?.content;
 
     console.log("Raw API Response:", responseContent);
 
-    // Ensure cleanedResponse starts from the first `{`
-    const cleanedResponse = responseContent.substring(responseContent.indexOf("{")).trim();
+    // Extract everything between the first '{' and the last '}'
+    const cleanedResponse = responseContent.substring(
+      responseContent.indexOf("{"),
+      responseContent.lastIndexOf("}") + 1
+    ).trim();
     
     console.log("Cleaned Response:", cleanedResponse);
 
