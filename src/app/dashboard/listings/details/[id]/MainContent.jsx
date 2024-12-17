@@ -170,7 +170,7 @@ const MainContent = ({ id }) => {
             <input
               id="price"
               type="text"
-              defaultValue={item.price || content.price}
+              defaultValue={item.price?.formatted || item.price || content.price}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             />
           </div>

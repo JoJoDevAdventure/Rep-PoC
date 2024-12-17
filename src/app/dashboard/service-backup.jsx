@@ -2,12 +2,12 @@ import { appState } from "@/appState"; // Application state for user data
 import axios from "axios";
 
 import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
 } from "firebase/firestore"; // Firestore functions
 import { db } from "../../../firebase"; // Firestore instance
 
@@ -260,11 +260,10 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     }
 
     // Save the listing once links are generated
-    console.log("Processing via ben's end point...");
+    console.log("Processing...");
     // const response = await saveListing({ imageLink, audioLink });
 
-    await analyzeMedia(audioLink, imageLink);
-    // await analyzeMedia(audioLink, imageLink, audioBlob);
+    await analyzeMedia(audioLink, imageLink, audioBlob);
 
   } catch (error) {
     console.log(error);
@@ -388,14 +387,13 @@ export const transcribeAudio = async (audioBlob) => {
   }
 };
 
-
 /**
  * Process audio and image using OpenAI API
  * @param {string} audioUrl - The URL of the audio file
  * @param {string} imageUrl - The URL of the image file
  * @returns {Promise<object>} - Transformed data or error response
  */
-export const analyzeMedias = async (audioUrl, imageUrl, audioBlob) => {
+export const analyzeMedia = async (audioUrl, imageUrl, audioBlob) => {
   try {
     const audio_transcription = await transcribeAudio(audioBlob); // Path to your audio file
 
@@ -541,75 +539,6 @@ Input JSON:
 };
 
 /**
- * Process audio and image using OpenAI API
- * @param {string} audioUrl - The URL of the audio file
- * @param {string} imageUrl - The URL of the image file
- * @returns {Promise<object>} - Transformed data or error response
- */
-export const analyzeMedia = async (audioUrl, imageUrl) => {
-  try {
-
-    const replicaideResponse = await axios.post(
-      "https://sea.replicaide.com:6868/process",
-      {
-        audio: audioUrl,
-        image: imageUrl,
-        language: "es", // Spanish language parameter
-      },
-      {
-        headers: {
-          "Content-Type": "application/json", // Ensure content-type is JSON
-        },
-      },
-    );
-
-    if (replicaideResponse.status !== 200) {
-      console.log(replicaideResponse)
-      throw new Error("Failed to process media through ReplicaIDE.");
-    }
-
-    console.log("ReplicaIDE API Response:", replicaideResponse.data);
-
-    // Step 2: Transform the ReplicaIDE response
-    const outputObj = replicaideResponse.data
-
-    console.log("Transformed API Response:", outputObj);
-
-    // Step 3: Generate TTS for Spanish Marketing Description
-    console.log("Generating TTS for Spanish...");
-    const espEnhancedAudio = await TTS(
-      "tTQzD8U9VSnJgfwC6HbY",
-      outputObj.esp.marketing_description
-    );
-
-    outputObj.esp.enhanced_audio = espEnhancedAudio;
-
-    console.log("Final Output with Enhanced Audio:", outputObj);
-
-    // Step 4: Save to Firebase
-    const output = saveToFirebase(JSON.stringify(outputObj));
-
-    return output; // Return the structured JSON
-
-  } catch (error) {
-    // Log the error details to Firebase
-    const logData = {
-      username: appState.user?.username || "Unknown",
-      timestamp: new Date().toISOString(),
-      error: error.message || "Unknown error",
-      imageUrl: imageUrl || "No image URL",
-      audioUrl: audioUrl || "No audio URL",
-    };
-
-    await logErrorToFirebase(logData);
-
-    console.error("Error analyzing media:", error.message);
-    throw new Error(error.message);
-  }
-};
-
-
-/**
  * Log errors to Firebase with user details and timestamp
  * @param {object} logData - The log data to be saved
  */
@@ -670,6 +599,11 @@ export const saveToFirebase = async (jsonData) => {
   try {
     // Parse the JSON string into an object
     const dataObject = JSON.parse(jsonData);
+
+    if (appState.user) {
+      dataObject.Location = appState.user.Location;
+      dataObject.Persona = appState.user.Persona;
+    }
 
     dataObject.timestamp = new Date().toISOString();
 

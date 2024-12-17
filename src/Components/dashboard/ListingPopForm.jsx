@@ -375,7 +375,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
             </div>
           ) : (
             <div className="flex justify-center gap-2">
-              {/* <label className="flex items-center gap-2 bg-p1 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-p2">
+              <label className="flex items-center gap-2 bg-p1 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-p2">
                 <input
                   type="file"
                   accept="audio/*"
@@ -388,7 +388,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
                   className="w-5 h-5"
                 />
                 {labels.uploadAudio}
-              </label> */}
+              </label>
               {isRecording ? (
                 <button
                   onClick={stopRecording}

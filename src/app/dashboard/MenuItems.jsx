@@ -42,7 +42,7 @@ const MenuItems = ({ menuItems, onSelect, isDarkMode }) => {
               </p>
               {/* Price */}
               <p className={`text-md font-semibold mt-4 ${textColor}`}>
-                {item.price || content.price}
+                {item.price?.formatted || item.price || content.price}
               </p>
             </div>
           </div>
