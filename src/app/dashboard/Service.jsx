@@ -565,7 +565,7 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
 
     if (replicaideResponse.status !== 200) {
       console.log(replicaideResponse)
-      throw new Error("Failed to process media through ReplicaIDE.");
+      throw new Error("Image violates AI agent tuning parameters resulting in unreliable output context. Please upload another image.");
     }
 
     console.log("ReplicaIDE API Response:", replicaideResponse.data);
