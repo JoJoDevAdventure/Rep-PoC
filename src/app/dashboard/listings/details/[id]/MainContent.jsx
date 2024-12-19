@@ -31,6 +31,7 @@ const MainContent = ({ id }) => {
 
   const handleDelete = async () => {
     try {
+      console.log("Deleting item", id)
       if (
         window.confirm(
           isEnglish
@@ -155,7 +156,7 @@ const MainContent = ({ id }) => {
             </label>
             <textarea
               id="description"
-              defaultValue={content?.marketing_description}
+              defaultValue={content?.description}
               rows={4}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             ></textarea>
