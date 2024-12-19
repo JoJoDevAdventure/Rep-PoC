@@ -520,6 +520,7 @@ Input JSON:
     // Add enhanced audio links to the output object
     outputObj.eng.enhanced_audio = engEnhancedAudio;
     outputObj.esp.enhanced_audio = espEnhancedAudio;
+    outputObj.audio_transcription = audio_transcription ? audio_transcription : "No audio transcription.";
 
     console.log("Final Output with Enhanced Audio:", outputObj);
 
