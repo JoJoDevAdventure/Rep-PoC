@@ -263,8 +263,8 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     console.log("Processing via ben's end point...");
     // const response = await saveListing({ imageLink, audioLink });
 
-    await analyzeMedia(audioLink, imageLink);
-    // await analyzeMedia(audioLink, imageLink, audioBlob);
+    // await analyzeMedia(audioLink, imageLink);
+    await analyzeMedias(audioLink, imageLink, audioBlob);
 
   } catch (error) {
     console.log(error);
@@ -435,14 +435,13 @@ Instructions:
 3. **Error Handling**:
    - If the URLs are invalid or content cannot be analyzed, return:
      {
-       "error": "Describe the error here."
+       "error": "Return an error message here, if something wrong with the image : 'Image couldn't be analysed due to copyright restrictions' if something wrong with audio_transcription 'Audio is invalid, please try again.' "
      }
 
 4. **Additional Notes**:
    - Avoid starting descriptions with "This is a..." or "The image describes/shows...".
    - Marketing descriptions should be engaging but relevant to the image.
    - Avoid starting titles with "delicious" or other generic words.
-   - If the image URL is invalid ignore it and base only on audio_transcription.
 
 Input JSON:
 {
