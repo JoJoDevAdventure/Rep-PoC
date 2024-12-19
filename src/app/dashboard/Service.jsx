@@ -399,6 +399,10 @@ export const analyzeMedias = async (audioUrl, imageUrl, audioBlob) => {
   try {
     const audio_transcription = await transcribeAudio(audioBlob); // Path to your audio file
 
+    if (audio_transcription == null) {
+      throw Error("Audio not transcribed", audioBlob);
+    }
+
     // Define the OpenAI prompt
     const prompt = `
 You are an AI assistant tasked with analyzing an image input and audio transcription. Your output should be a structured JSON object based solely on the visible content of the image and information from the transcription JUST JSON starting with "{".
@@ -532,6 +536,7 @@ Input JSON:
       error: error.message || "Unknown error",
       imageUrl: imageUrl || "No image URL",
       audioUrl: audioUrl || "No audio URL",
+      audio_transcription
     };
 
     await logErrorToFirebase(logData);
