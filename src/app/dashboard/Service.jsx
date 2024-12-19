@@ -397,6 +397,7 @@ export const transcribeAudio = async (audioBlob) => {
  */
 export const analyzeMedias = async (audioUrl, imageUrl, audioBlob) => {
   try {
+
     const audio_transcription = await transcribeAudio(audioBlob); // Path to your audio file
 
     if (audio_transcription == null) {
@@ -537,7 +538,7 @@ Input JSON:
       error: error.message || "Unknown error",
       imageUrl: imageUrl || "No image URL",
       audioUrl: audioUrl || "No audio URL",
-      audio_transcription
+      
     };
 
     await logErrorToFirebase(logData);
