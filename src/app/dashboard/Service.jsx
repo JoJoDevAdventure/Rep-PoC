@@ -263,8 +263,8 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     console.log("Processing via ben's end point...");
     // const response = await saveListing({ imageLink, audioLink });
 
-    // await analyzeMedia(audioLink, imageLink);
-    await analyzeMedias(audioLink, imageLink, audioBlob);
+    await analyzeMedia(audioLink, imageLink);
+    // await analyzeMedias(audioLink, imageLink, audioBlob);
 
   } catch (error) {
     console.log(error);
@@ -554,7 +554,6 @@ Input JSON:
  */
 export const analyzeMedia = async (audioUrl, imageUrl) => {
   try {
-
     const replicaideResponse = await axios.post(
       "https://sea.replicaide.com:6868/process",
       {
