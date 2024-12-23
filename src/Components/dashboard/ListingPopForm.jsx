@@ -175,7 +175,7 @@ const ListingPopForm = ({ isOpen, onClose, onSave }) => {
       }
 
       // Create a File object from the blob
-      const fileName = generateFileName("audio", "webm");
+      const fileName = generateFileName("audio", "mp3");
       const file = new File([blob], fileName, { type: blob.type });
 
       // Set the recorded audio blob and generate the waveform

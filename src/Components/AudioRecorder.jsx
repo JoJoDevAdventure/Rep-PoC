@@ -35,7 +35,7 @@ const AudioRecorder = ({ onSave }) => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recorderRef.current = new RecordRTC(stream, {
         type: "audio",
-        mimeType: "audio/webm",
+        mimeType: "audio/mp3",
       });
       recorderRef.current.startRecording();
       setIsRecording(true);
