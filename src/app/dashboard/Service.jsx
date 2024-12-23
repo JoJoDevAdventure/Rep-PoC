@@ -19,6 +19,7 @@ const GITHUB_REPO = "PoC-Files";
 const API_URL = "http://sea.replicaide.com:8000/api/process_item/";
 
 export const fileToBase64 = (file) => {
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 

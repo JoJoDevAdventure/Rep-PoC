@@ -123,7 +123,7 @@ const MainContent = ({ id }) => {
               {isEnglish ? "Marketing Audio" : "Audio de marketing"}
             </h2>
             <ReactAudioPlayer
-              src={content.enhanced_audio}
+              src={content?.enhanced_audio || item?.language.marketing_audio}
               autoPlay
               controls
               className="w-full mt-4"
@@ -143,7 +143,7 @@ const MainContent = ({ id }) => {
             <input
               id="title"
               type="text"
-              defaultValue={content?.title}
+              defaultValue={content?.title || item?.language.title}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
@@ -156,7 +156,7 @@ const MainContent = ({ id }) => {
             </label>
             <textarea
               id="description"
-              defaultValue={content?.description}
+              defaultValue={content?.description || item?.language.marketing_description}
               rows={4}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             ></textarea>
