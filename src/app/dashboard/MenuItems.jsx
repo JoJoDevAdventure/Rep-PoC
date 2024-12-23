@@ -13,7 +13,7 @@ const MenuItems = ({ menuItems, onSelect, isDarkMode }) => {
     <div className={`w-full md:p-4 grid md:grid-cols-4 gap-6 ${bgColor}`}>
       {menuItems.map((item, index) => {
         // Get content based on language preference
-        const content = isEnglish ? item.eng : item.esp;
+        const content = item.esp != null ? item.esp : item.language;
 
         return (
           <div

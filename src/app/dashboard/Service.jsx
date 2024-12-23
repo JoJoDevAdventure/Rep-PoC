@@ -260,11 +260,8 @@ export const processListing = async ({ uploadedFile, audioBlob }) => {
     }
 
     // Save the listing once links are generated
-    console.log("Processing via ben's end point...");
-    // const response = await saveListing({ imageLink, audioLink });
-
+    console.log("Processing via Pipedream...");
     await analyzeMedia(audioLink, imageLink);
-    // await analyzeMedias(audioLink, imageLink, audioBlob);
 
   } catch (error) {
     console.log(error);
@@ -555,7 +552,7 @@ Input JSON:
 export const analyzeMedia = async (audioUrl, imageUrl) => {
   try {
     const replicaideResponse = await axios.post(
-      "https://sea.replicaide.com:6868/process",
+      "https://eojbpmfkfnysusg.m.pipedream.net",
       {
         audio: audioUrl,
         image: imageUrl,
@@ -575,26 +572,7 @@ export const analyzeMedia = async (audioUrl, imageUrl) => {
 
     console.log("ReplicaIDE API Response:", replicaideResponse.data);
 
-    // Step 2: Transform the ReplicaIDE response
-    const outputObj = replicaideResponse.data
-
-    console.log("Transformed API Response:", outputObj);
-
-    // Step 3: Generate TTS for Spanish Marketing Description
-    console.log("Generating TTS for Spanish...");
-    const espEnhancedAudio = await TTS(
-      "tTQzD8U9VSnJgfwC6HbY",
-      outputObj.esp.marketing_description
-    );
-
-    outputObj.esp.enhanced_audio = espEnhancedAudio;
-
-    console.log("Final Output with Enhanced Audio:", outputObj);
-
-    // Step 4: Save to Firebase
-    const output = saveToFirebase(JSON.stringify(outputObj));
-
-    return output; // Return the structured JSON
+    return replicaideResponse.data; // Return the structured JSON
 
   } catch (error) {
     // Log the error details to Firebase
