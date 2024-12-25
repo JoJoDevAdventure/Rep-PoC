@@ -668,17 +668,33 @@ export const saveToFirebase = async (jsonData) => {
   }
 };
 
+import { orderBy, query } from "firebase/firestore";
+
+/**
+ * Fetch all recipes from Firestore, sorted by metainf.timestamp in descending order.
+ * @returns {Array} An array of recipes with document IDs included, sorted by timestamp.
+ */
 export const fetchRecipes = async () => {
   try {
-    const querySnapshot = await getDocs(collection(db, "menu_items"));
+    // Reference to the "menu_items" collection
+    const collectionRef = collection(db, "menu_items");
+
+    // Query to fetch documents sorted by metainf.timestamp in descending order
+    const q = query(collectionRef, orderBy("metadata.time_stamp", "desc"));
+
+    // Fetch documents from Firestore
+    const querySnapshot = await getDocs(q);
+
+    // Map the results to include document IDs
     const recipes = querySnapshot.docs.map((doc) => ({
       id: doc.id, // Include the document ID
       ...doc.data(), // Spread the document data
     }));
-    return recipes;
+
+    return recipes; // Return the array of recipes
   } catch (error) {
-    console.error("Error fetching recipes from Firestore:", error);
-    throw error;
+    console.error("Error fetching and sorting recipes from Firestore:", error);
+    throw new Error("Failed to fetch recipes. Please try again later.");
   }
 };
 
