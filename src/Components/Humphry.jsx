@@ -38,9 +38,11 @@ const Humphry = () => {
   const activateAgent = async () => {
     try {
       setIsListening(true);
+
+      console.log(recipesRef)
   
       const menuPrompt = recipesRef.current
-        .map((item) => `${item.esp.title}: $${item.price || item.eng.price}`)
+        .map((item) => `${item.language.title}: $${item.price.formatted || item.price}`)
         .join(", ");
   
       // Use Spanish prompt
