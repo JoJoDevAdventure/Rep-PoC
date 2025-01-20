@@ -1,21 +1,20 @@
-// /src/context/themeContext.jsx
-"use client"
+"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark mode
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to light mode
 
-  // Optional: Sync with localStorage or system preferences
+  // Sync theme with localStorage or system preferences
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
-      setIsDarkMode(savedTheme === "light");
+      setIsDarkMode(savedTheme === "dark");
     } else {
-      // Save the default (dark mode) in localStorage
-      localStorage.setItem("theme", "dark");
+      // Save the default (light mode) in localStorage
+      localStorage.setItem("theme", "light");
     }
   }, []);
 
@@ -27,7 +26,7 @@ export const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
-      <div className={isDarkMode ? "dark" : ""}>{children}</div>
+      <div className={isDarkMode ? "dark" : "light"}>{children}</div>
     </ThemeContext.Provider>
   );
 };

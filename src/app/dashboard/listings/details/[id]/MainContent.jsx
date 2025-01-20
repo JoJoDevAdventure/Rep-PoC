@@ -1,7 +1,12 @@
 "use client";
 
-import { deleteRecipeById, fetchRecipeById, updateRecipeById } from "@/app/dashboard/Service";
+import {
+  deleteRecipeById,
+  fetchRecipeById,
+  updateRecipeById,
+} from "@/app/dashboard/Service";
 import { appState } from "@/appState"; // Access appState for language preference
+import Ingredients from "@/Components/Ingredients";
 import { useRouter } from "next/navigation"; // Use Next.js router for navigation
 import { useEffect, useState } from "react";
 import ReactAudioPlayer from "react-audio-player";
@@ -10,6 +15,7 @@ const MainContent = ({ id }) => {
   const router = useRouter();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [ingredients, setIngredients] = useState([]);
 
   const isEnglish = appState.isEnglish; // Get language preference
   const content = isEnglish ? item?.eng : item?.esp; // Use English or Spanish content
@@ -19,6 +25,8 @@ const MainContent = ({ id }) => {
       try {
         const fetchedItem = await fetchRecipeById(id); // Fetch item from Firebase
         setItem(fetchedItem);
+        console.log(fetchedItem.ingredients.main);
+        setIngredients(fetchedItem.ingredients.main);
       } catch (error) {
         console.error("Error fetching item:", error);
       } finally {
@@ -31,7 +39,7 @@ const MainContent = ({ id }) => {
 
   const handleDelete = async () => {
     try {
-      console.log("Deleting item", id)
+      console.log("Deleting item", id);
       if (
         window.confirm(
           isEnglish
@@ -52,7 +60,6 @@ const MainContent = ({ id }) => {
       );
     }
   };
-
   const handleSave = async () => {
     try {
       const title = document.getElementById("title").value.trim();
@@ -68,8 +75,20 @@ const MainContent = ({ id }) => {
         return;
       }
 
+      console.log("Updated ingredients:", ingredients);
+
+      // Ensure the ingredients object has the correct structure
+      const updatedData = {
+        title,
+        description,
+        price,
+        ingredients: {
+          main: ingredients, // Update the `main` field of `ingredients`
+        },
+      };
+
       // Update the recipe in Firebase
-      await updateRecipeById(id, { title, description, price });
+      await updateRecipeById(id, updatedData);
       console.log("Item successfully updated.");
       alert(
         isEnglish
@@ -156,10 +175,24 @@ const MainContent = ({ id }) => {
             </label>
             <textarea
               id="description"
-              defaultValue={content?.description || item?.language.marketing_description}
+              defaultValue={
+                content?.description || item?.language.marketing_description
+              }
               rows={4}
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             ></textarea>
+          </div>
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-600 mb-2"
+            >
+              {isEnglish ? "Description" : "Ingredientes"}
+            </label>
+            <Ingredients
+              initialIngredients={item.ingredients?.main}
+              onIngredientsChange={(ingredients) => setIngredients(ingredients)}
+            />
           </div>
           <div>
             <label
@@ -171,7 +204,9 @@ const MainContent = ({ id }) => {
             <input
               id="price"
               type="text"
-              defaultValue={item.price?.formatted || item.price || content.price}
+              defaultValue={
+                item.price?.formatted || item.price || content.price
+              }
               className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring focus:ring-orange-500 focus:border-orange-500"
             />
           </div>

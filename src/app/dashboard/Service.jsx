@@ -769,7 +769,7 @@ import { updateDoc } from "firebase/firestore";
 /**
  * Update a recipe/document by ID in Firestore.
  * @param {string} id - The ID of the document to update.
- * @param {Object} updates - The fields to update (title, description, price).
+ * @param {Object} updates - The fields to update (title, description, price, ingredients).
  * @returns {void} - Logs success or throws an error.
  */
 export const updateRecipeById = async (id, updates) => {
@@ -777,28 +777,143 @@ export const updateRecipeById = async (id, updates) => {
     // Reference to the document in the "menu_items" collection
     const docRef = doc(db, "menu_items", id);
 
-    // Determine the language based on appState
-    const isEnglish = appState.isEnglish;
-
     // Prepare the update object
     const updateObject = {};
+
+    // Update `language.title` and `language.description` dynamically
     if (updates.title) {
-      updateObject[`${isEnglish ? "eng" : "esp"}.title`] = updates.title;
+      updateObject["language.title"] = updates.title; // Update title in `language`
     }
     if (updates.description) {
-      updateObject[`${isEnglish ? "eng" : "esp"}.description`] =
-        updates.description;
-    }
-    if (updates.price) {
-      updateObject["price"] = updates.price; // Price is typically not language-specific
+      updateObject["language.description"] = updates.description; // Update description in `language`
     }
 
-    // Update the document in Firestore
+    // Update price
+    if (updates.price) {
+      updateObject["price"] = updates.price; // Price is not nested within language
+    }
+
+    // Update ingredients.main if provided
+    if (updates.ingredients?.main) {
+      updateObject["ingredients.main"] = updates.ingredients.main; // Update the main array in the ingredients field
+    }
+
+    // Perform the update in Firestore
     await updateDoc(docRef, updateObject);
 
     console.log(`Document with ID: ${id} successfully updated.`);
+    console.log("Updated fields:", updateObject);
   } catch (error) {
     console.error(`Error updating recipe with ID ${id} in Firestore:`, error);
     throw error;
+  }
+};
+
+export const extractOrder = async (messages) => {
+  const prompt = `
+You are an assistant extracting structured order details from a restaurant chat conversation. Analyze the following conversation messages and extract the following details into a JSON object:
+- Customer Name (e.g., "John Doe")
+- Items (an array of objects, each object containing):
+  - "name" (e.g., "Pizza")
+  - "quantity" (e.g., 2)
+  - "price" (if available, e.g., 10.99. If unavailable, leave as 0)
+
+The JSON object should look like this:
+{
+  "customerName": "John Doe",
+  "items": [
+    {
+      "name": "Pizza",
+      "quantity": 2,
+      "price": 10.99
+    },
+    {
+      "name": "Pasta",
+      "quantity": 1,
+      "price": 8.99
+    }
+  ],
+  "total": "30.97"
+}
+
+If any information is missing (e.g., customer name or item price), return an empty string "" or 0 where appropriate. Never return an error.
+
+Here are the conversation messages:
+${JSON.stringify(messages)}
+
+Extract and return the JSON object.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const extractedData = response.choices[0].message.content;
+
+    try {
+      return JSON.parse(extractedData); // Ensure the result is valid JSON
+    } catch (err) {
+      console.error("Failed to parse extracted order data:", err);
+      return null; // Handle invalid JSON
+    }
+  } catch (error) {
+    console.error("Error extracting order data:", error);
+    return null; // Handle API errors
+  }
+};
+
+/**
+ * Saves the JSON output from ChatGPT to a Firebase Firestore collection.
+ * @param {string} jsonData - The JSON string output from ChatGPT.
+ * @returns {Promise<string>} - Promise resolving to the document ID on success.
+ */
+export const saveOrderToFirebase = async (jsonData) => {
+  if (!jsonData) {
+    throw new Error("No JSON data provided to save.");
+  }
+
+  try {
+    // Parse the JSON string into an object
+    const dataObject = JSON.parse(jsonData);
+
+    dataObject.timestamp = new Date().toISOString();
+
+    // Add the parsed object to the Firestore collection
+    const docRef = await addDoc(collection(db, "orders"), dataObject);
+
+    console.log("Document successfully written with ID:", docRef.id);
+    return docRef.id; // Return the document ID for reference
+  } catch (error) {
+    console.error("Error saving to Firestore:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all recipes from Firestore, sorted by metainf.timestamp in descending order.
+ * @returns {Array} An array of recipes with document IDs included, sorted by timestamp.
+ */
+export const fetchOrders = async () => {
+  try {
+    // Reference to the "menu_items" collection
+    const collectionRef = collection(db, "orders");
+
+    // Query to fetch documents sorted by metainf.timestamp in descending order
+    const q = query(collectionRef, orderBy("metadata.time_stamp", "desc"));
+
+    // Fetch documents from Firestore
+    const querySnapshot = await getDocs(q);
+
+    // Map the results to include document IDs
+    const recipes = querySnapshot.docs.map((doc) => ({
+      id: doc.id, // Include the document ID
+      ...doc.data(), // Spread the document data
+    }));
+
+    return recipes; // Return the array of recipes
+  } catch (error) {
+    console.error("Error fetching and sorting orders from Firestore:", error);
+    throw new Error("Failed to fetch orders. Please try again later.");
   }
 };
