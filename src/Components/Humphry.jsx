@@ -7,9 +7,9 @@ import { useRef, useState } from "react";
 import HumphryAnimation from "./animations/Humphry.json";
 
 const Humphry = ({ onSave }) => {
-  const [isActive, setIsActive] = useState(false); // State for activating Humphry
+  const [isActive, setIsActive] = useState(true); // State for activating Humphry
   const [isListening, setIsListening] = useState(false); // State for speech recognition activity
-  const [agentOutput, setAgentOutput] = useState(""); // State for agent's real-time output
+  const [agentOutput, setAgentOutput] = useState("Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum"); // State for agent's real-time output
   const [orderDetails, setOrderDetails] = useState(null); // State for storing final order JSON
   const [languageMenu, setLanguageMenu] = useState(false); // State for showing the language menu
   const [selectedLanguage, setSelectedLanguage] = useState("English"); // State for the selected language
@@ -245,7 +245,7 @@ const Humphry = ({ onSave }) => {
                     : "Escuchando..."}
                 </p>
               ) : (
-                <p className="text-white text-xl">
+                <p className="text-white text-l max-w-[80vw] ml-[15%]">
                   {agentOutput}
                 </p>
               )}
