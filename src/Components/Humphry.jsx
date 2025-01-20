@@ -25,8 +25,8 @@ const Humphry = ({ onSave }) => {
   const languageOptions = [
     { name: "English", code: "en", voiceId: "UgBBYS2sOqTuMpoF3BR0" },
     { name: "Spanish", code: "es", voiceId: "tTQzD8U9VSnJgfwC6HbY" },
-    { name: "French", code: "fr", voiceId: "fr_voice_789" },
-    { name: "Russian", code: "ru", voiceId: "ru_voice_012" },
+    { name: "French", code: "fr", voiceId: "UgBBYS2sOqTuMpoF3BR0" },
+    { name: "Russian", code: "ru", voiceId: "UgBBYS2sOqTuMpoF3BR0" },
   ];
 
   // Fetch menu items when Humphry is activated
@@ -42,8 +42,10 @@ const Humphry = ({ onSave }) => {
 
   const handleSave = async () => {
     onSave()
-    await saveOrderToFirebase(orderData)
-    console.log("Order Saved:", orderData);
+    await saveOrderToFirebase(JSON.stringify(order))
+    console.log("Order Saved:", order);
+    conversation.endSession()
+    setIsActive(false)
   };
 
   const activateAgent = async (language) => {
@@ -93,7 +95,12 @@ const Humphry = ({ onSave }) => {
             firstMessage:
               selectedLangDetails.name === "English"
                 ? "Hello! I'm John, How can I assist you today?"
-                : "¡Hola! Soy Nathalia, ¿Cómo puedo ayudarte hoy?",
+                : selectedLangDetails.name === "French" ? 
+                "Bonjour! Je m'appelle John, comment puis-je vous aider aujourd'hui?" 
+                : selectedLangDetails.name === "Russian" ? 
+                ""
+                :
+                "¡Hola! Soy Nathalia, ¿Cómo puedo ayudarte hoy?",
             language: selectedLangDetails.code, // Set the agent's language
           },
           tts: {
@@ -103,6 +110,8 @@ const Humphry = ({ onSave }) => {
 
         onMessage: async (props) => {
           console.log("Message Received:", props);
+
+          setAgentOutput(props.message)
 
           // Append the new message to the array
           setMessages((prevMessages) => {
@@ -119,7 +128,7 @@ const Humphry = ({ onSave }) => {
               extractOrder(updatedMessages).then((data) => {
                 if (data) {
                   console.log("Extracted Order Data:", data);
-                  setListingData(data); // Update listing data
+                  setOrder(data); // Update listing data
                 }
               });
             }
@@ -165,7 +174,7 @@ const Humphry = ({ onSave }) => {
     if (isActive) {
       conversation.endSession()
       setIsActive(false)
-      setLanguageMenu(true); // Show the language menu first
+      setLanguageMenu(false); // Show the language menu first
     }
   };
 
@@ -182,6 +191,7 @@ const Humphry = ({ onSave }) => {
       {/* Dark Background when Humphry is Active */}
       {isActive && (
         <div
+          onClick={() => setLanguageMenu(false)}
           className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40"
         ></div>
       )}
@@ -235,13 +245,13 @@ const Humphry = ({ onSave }) => {
                     : "Escuchando..."}
                 </p>
               ) : (
-                <p className="text-white text-[12px]">
+                <p className="text-white text-xl">
                   {agentOutput}
                 </p>
               )}
 
               {/* Input Form */}
-              <div className="relative transform inset-0 top-22 left-[6%] bg-white p-6 rounded-lg shadow-lg z-40 w-[88%] text-gray-800">
+              <div className="relative transform inset-0 top-22 bg-white p-6 rounded-lg shadow-lg z-40 min-w-[88%] text-gray-800">
                 <div className="flex flex-col gap-4">
                   {/* Customer Name */}
                   <input

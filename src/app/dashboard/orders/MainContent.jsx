@@ -47,22 +47,12 @@ const MainContent = ({ orders = [] }) => {
                     {order.items.map((item, index) => (
                       <p key={index} className="text-sm text-gray-500">
                         {isEnglish
-                          ? `${item.quantity}x ${item.name} @ $${item.price.toFixed(
-                              2
-                            )}`
-                          : `${item.quantity}x ${item.name} @ $${item.price.toFixed(
-                              2
-                            )}`}
+                          ? `${item.quantity}x ${item.name}`
+                          : `${item.quantity}x ${item.name}`
+                        }
                       </p>
                     ))}
                   </div>
-
-                  {/* Total */}
-                  <p className="text-sm text-gray-500 mt-2 font-semibold">
-                    {isEnglish
-                      ? `Total: $${order.total}`
-                      : `Total: $${order.total}`}
-                  </p>
                 </div>
               </div>
 
@@ -71,13 +61,13 @@ const MainContent = ({ orders = [] }) => {
                 <div className="h-2 bg-gray-200 rounded-full">
                   <div
                     className="h-2 bg-orange-500 rounded-full"
-                    style={{ width: `${order.progress}%` }}
+                    style={{ width: `10%` }}
                   ></div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
                   {isEnglish
-                    ? `${order.progress}% completed`
-                    : `${order.progress}% completado`}
+                    ? `10% completed`
+                    : `10% completado`}
                 </p>
               </div>
             </div>

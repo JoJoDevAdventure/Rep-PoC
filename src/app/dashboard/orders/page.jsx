@@ -1,10 +1,10 @@
 "use client";
 
+import { appState } from "@/appState";
 import dynamic from "next/dynamic"; // For dynamic imports
 import { useRouter } from "next/navigation"; // For client-side navigation
 import { useEffect, useState } from "react"; // React hook to handle side effects
 import { fetchOrders } from "../Service";
-
 // Dynamically import components with SSR disabled
 const Humphry = dynamic(() => import("@/Components/Humphry"), { ssr: false });
 const Header = dynamic(() => import("@/Components/dashboard/Header"), { ssr: false });
@@ -31,10 +31,10 @@ const Dashboard = () => {
   useEffect(() => {
     loadOrders()
     // Redirect user to the home page if no username is found in the app state
-    // if (appState.user == null) {
-      // router.push("/"); // Redirects to the root ("/") if not logged in
-    //   return
-    // }
+    if (appState.user == null) {
+      router.push("/"); // Redirects to the root ("/") if not logged in
+      return
+    }
   }, [router]); // Dependency ensures this runs whenever `router` changes
 
   return (

@@ -847,6 +847,7 @@ Extract and return the JSON object.`;
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
+      response_format : { "type": "json_object" }
     });
 
     const extractedData = response.choices[0].message.content;
@@ -900,7 +901,7 @@ export const fetchOrders = async () => {
     const collectionRef = collection(db, "orders");
 
     // Query to fetch documents sorted by metainf.timestamp in descending order
-    const q = query(collectionRef, orderBy("metadata.time_stamp", "desc"));
+    const q = query(collectionRef, orderBy("timestamp", "desc"));
 
     // Fetch documents from Firestore
     const querySnapshot = await getDocs(q);
