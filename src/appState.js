@@ -2,5 +2,5 @@
 export const appState = {
   isAuth: false,
   user: null,
-  isEnglish: true,
+  isEnglish: false,
 };
