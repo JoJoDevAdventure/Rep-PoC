@@ -1,6 +1,20 @@
 // src/data.js
 export const users = [
   {
+    email: "demo@replicaide.com",
+    password: "Replicaide888",
+    username: "Kev",
+    Location: {
+      city: "Miami Beach",
+      state: "Florida",
+      country: "US"
+    },
+    Persona: {
+      role: "Manager",
+      temperament: "Chill guy"
+    },
+  },
+  {
     email: "joseph@replicaide.com",
     password: "12345678",
     username: "Joseph Bouhlel",
