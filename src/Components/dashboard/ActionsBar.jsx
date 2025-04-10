@@ -64,12 +64,12 @@ const ActionsBar = ({ onSearch, onSort, onAddListing, isDarkMode }) => {
           <div className="flex gap-4 md:w-auto justify-center w-2/3 pl-4">
             {/* Add Listing Button */}
             <button
-            disabled={appState.user.username == "Kev" ? true : false}
+            disabled={appState.user.username == "Kev" || appState.user.username == "RepliDemo" ? true : false}
               onClick={onAddListing}
               className={`px-4 py-2 rounded-lg w-full md:w-auto flex justify-center gap-2 items-center cursor-pointer  ${appState.user.username == "Kev" ? "bg-gray-600 hover:bg-gray-500" : ""} ${
                 isDarkMode
-                  ? appState.user.username == "Kev" ? "bg-gray-600 hover:bg-gray-500" : "bg-orange-500 text-white hover:bg-orange-600"
-                  : appState.user.username == "Kev" ? "bg-gray-600 hover:bg-gray-500" : "bg-orange-500 text-white hover:bg-orange-600"
+                  ? appState.user.username == "Kev" || appState.user.username == "RepliDemo" ? "bg-gray-600 hover:bg-gray-500" : "bg-orange-500 text-white hover:bg-orange-600"
+                  : appState.user.username == "Kev" || appState.user.username == "RepliDemo" ? "bg-gray-600 hover:bg-gray-500" : "bg-orange-500 text-white hover:bg-orange-600"
               }`}
             >
               <svg

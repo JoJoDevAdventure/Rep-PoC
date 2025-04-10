@@ -13,7 +13,7 @@ const Page = () => {
   const { id } = useParams(); // Get the item ID
 
   return (
-    <div className="flex md:max-h-[100vh] pb-12 md:pb-0 md:overflow-hidden">
+    <div className="flex pb-12 md:pb-0 md:overflow-hidden">
       <SideBar />
       {id ? <MainContent id={id} /> : <Loading />}
     </div>

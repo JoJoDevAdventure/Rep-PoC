@@ -34,6 +34,11 @@ const MainContent = ({ menuItems, isDarkMode, onReload, handleSelect }) => {
     );
 
     try {
+      
+      if (appState.user.username == "Kev" || appState.user.username == "RepliDemo") {
+        window.alert(`Not authorized to delete or update products` );
+        return
+      }
 
       const response = await processListing({ uploadedFile, audioBlob });
       setIsLoading(false);

@@ -38,6 +38,11 @@ const MainContent = ({ id }) => {
   }, [id]);
 
   const handleDelete = async () => {
+
+    if (appState.user.username == "Kev" || appState.user.username == "RepliDemo") {
+      window.alert(`Not authorized to delete or update products` );
+      return
+    }
     try {
       console.log("Deleting item", id);
       if (
@@ -61,6 +66,10 @@ const MainContent = ({ id }) => {
     }
   };
   const handleSave = async () => {
+    if (appState.user.username == "Kev" || appState.user.username == "RepliDemo") {
+      window.alert(`Not authorized to delete or update products` );
+      return
+    }
     try {
       const title = document.getElementById("title").value.trim();
       const description = document.getElementById("description").value.trim();

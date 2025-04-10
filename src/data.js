@@ -3,7 +3,7 @@ export const users = [
   {
     email: "demo@replicaide.com",
     password: "Replicaide888",
-    username: "ReplicAIDE",
+    username: "RepliDemo",
     Location: {
       city: "Miami Beach",
       state: "Florida",
